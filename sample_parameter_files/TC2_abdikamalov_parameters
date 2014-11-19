@@ -1,0 +1,74 @@
+##### Job parameters #######
+jobname			=	"Abdikamalov Test"
+GR			=	0		# 1 for GR, 0 for Newtonian, enforced by M1_testcase.F90
+outdir 			= 	"Data_TC2"	# output directory
+initial_data		=	"M1test"	# "Sedov", "Shocktube", "OSC", "Collapse", "M1test"
+gravity_active		=	0		# do we want gravity?
+ntmax			=	1000000		# maximum timestep
+tend			=	0.001d0		# maximum time
+
+####### Grid parameters #######
+geometry		=	2		# 1: planar, 2: spherical
+gridtype		=	"blah"		# set by M1_testcase.F90
+radial_zones		=	100		# number of radial zones, enforced by M1_testcase.F90
+ghosts1			=	4		# number of ghost cells
+
+####### Hydro Parameters #######
+do_hydro		=	0		# 1 for hydro on
+iorder_hydro		=       2           	# RK order
+cffac			=	0.5d0		# CFL factor
+reconstruction_method	=	"tvd"		# "tvd", "pc","ppm"
+ppm_origin_TVD		=	5		
+ppm_reconstruct_temp    =       0               ###### added by csul
+tvd_limiter		=	"MC"		# MC, minmod,
+flux_type		= 	"HLLE"		# HLLE, HLLC
+
+####### EOS parameters #######
+eoskey			=	4		# hybrid: 1
+						# poly: 2
+						# hot nuclear: 3
+						# ideal: 4
+
+####### Output parameters #######
+ntinfo			=	100		# stdout
+dtout			=	1.0d-4		# time between outputs
+dtout_scalar		=	1.0d-5		# time between scalar out
+ntout			=	-1		# output every timesteps
+ntout_scalar		=	-1		# scalar output
+
+####### Restart parameters #######
+ntout_restart		=	-1		# restart output frequency in timesteps
+dtout_restart		=	0.005d0		# restart output frequency in time
+do_restart = 0
+restart_file_name	=	"blah"
+
+########## M1 settings ##########
+do_M1		 	=       1		#1 for M1 transport scheme
+v_order			=	0		#enforced by M1_testcases.F90	
+extraction_radii	=	-1.0d0		#set by M1_testcases.F90
+number_species		=	3		#number of neutrino species, limited 
+						#options will work, must be comensurate with table
+number_groups		=	18		#number of energy groups, limited 
+						#options will work, must be comensurate with table
+opacity_table 		=	"/Volumes/vault/EOS/NuLib_LS220_18.h5" 
+number_eas		=	3		#number of opacity variables to read in
+M1closure		=	'ME'		# Closure choice
+testcase		=	2		#if you want a test case set this to the
+						#test case number, along with M1test as "initial_data"
+
+include_epannihil_kernels =	0		#for full thermal treatment - forced by M1_testcase.F90
+include_Ielectron_exp	=	0		#Inelastic scattering on electrons, explicit? - forced by M1_testcase.F90
+include_Ielectron_imp	=	0		#Inelastic scattering on electrons, implicit? - forced by M1_testcase.F90
+include_energycoupling_exp	=	0	#energy coupling, explicit? - forced by M1_testcase.F90
+include_energycoupling_imp	=	0	#energy coupling, implicit? - forced by M1_testcase.F90
+
+M1_control		=	0		#1 means you must specify the settings for each phase
+						# in the parameter file, collapse, bounce and postbounce.	
+
+####### Neutrino parameters #######
+fake_neutrinos		=	0		# 1 for ANY neutrino scheme
+
+####### Atmosphere parameters #######
+atmo_rho_rel_min	=	0.0d0
+atmo_rho_abs_min	=	1.5d3
+atmo_fac		=	0.1d0

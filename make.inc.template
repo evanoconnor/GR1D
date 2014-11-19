@@ -1,0 +1,13 @@
+F90=gfortran
+F90FLAGS=-O3 -g -fopenmp
+
+MODINC="-I ./"
+
+HDF5DIR=
+HDF5INCS=-I${HDF5DIR}/include
+HDF5LIBS=-L${HDF5DIR}/lib -lhdf5 -lhdf5_fortran -lhdf5  -lz
+
+HAVE_NUC_EOS=1
+HAVE_RESTART=1
+HAVE_LEAK_ROS=0
+HAVE_LAPACK=1

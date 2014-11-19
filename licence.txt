@@ -1,0 +1,25 @@
+While this verison of GR1D is open source, its copyright is held by
+Evan O’Connor and Christian Ott. In the absence of suitable open
+scientific software licenses, we release this version of GR1D to the
+community under the Creative Commons attribution-noncommercial-share
+alike license:
+
+http://creativecommons.org/licenses/by-nc-sa/3.0/us
+
+Essentially, you may use GR1D, but must make reference to our work,
+must not use GR1D for commercial purposes, and any code including or
+using our routines or part of them may be made publically available,
+and if so, only under the same license.
+
+When using this version of GR1D in published work please make
+reference to the papers describing it
+
+Evan O’Connor, title..., arXiv:1411.????, 2014
+
+Evan O’Connor and Christian D. Ott, A New Spherically-Symmetric
+General Relativistic Hydrodynamics Code for Stellar Collapse to
+Neutron Stars and Black Holes, Class. Quant. Grav., 27 114103, 2010.
+
+
+
+
