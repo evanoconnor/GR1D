@@ -14,9 +14,10 @@ and if so, only under the same license.
 When using this version of GR1D in published work please make
 reference to the papers describing it
 
-Evan O’Connor, title..., arXiv:1411.????, 2014
+1. Evan O’Connor, An Open-Source Neutrino Radiation Hydrodynamics Code for
+  Core-Collapse Supernovae, arXiv:1411.????, 2014.
 
-Evan O’Connor and Christian D. Ott, A New Spherically-Symmetric
+2. Evan O’Connor and Christian D. Ott, A New Spherically-Symmetric
 General Relativistic Hydrodynamics Code for Stellar Collapse to
 Neutron Stars and Black Holes, Class. Quant. Grav., 27 114103, 2010.
 
