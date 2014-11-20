@@ -236,7 +236,7 @@ subroutine M1test
      endif
 
      if (.not.GR) stop "This test is for GR only!"
-     if (n1.ne.600+2*ghosts1) stop "You need 300 zones"
+     if (n1.ne.300+2*ghosts1) stop "You need 300 zones"
 
      ! initial timestep
      dt = 1.0d-8*time_gf

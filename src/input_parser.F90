@@ -218,13 +218,6 @@ subroutine input_parser
      endif
   endif
 
-#if(HAVE_LEAK_ROS)
-#else
-  if (do_leak_ros) then
-  else
-     stop "HAVE_LEAK_ROS is false but do_leak_ros is false"
-  endif
-#endif
   call get_double_parameter('atmo_rho_abs_min',atmo_rho_abs_min)
   call get_double_parameter('atmo_rho_rel_min',atmo_rho_rel_min)
   call get_double_parameter('atmo_fac',atmo_fac)
