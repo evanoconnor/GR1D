@@ -68,9 +68,9 @@ subroutine M1_conservativeupdate(dts)
          dtau*volume(k)/energy_gf/(dts/time_gf)
 
      if (.not.GR) then
-        dSr = dSr*sqrt_gamma(k)
-        dtau = dtau*sqrt_gamma(k)
-        dDye = dDye*sqrt_gamma(k)
+        dSr = dSr
+        dtau = dtau
+        dDye = dDye
      endif
 
      q(k,2) = qold(k,2) + dSr

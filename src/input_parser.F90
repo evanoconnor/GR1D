@@ -4,6 +4,9 @@ subroutine input_parser
   use GR1D_module
   use ye_of_rho
   implicit none
+
+  integer :: tempint
+  
   call get_string_parameter('jobname',jobname)
   call get_string_parameter('outdir',outdir)
   call get_logical_parameter('GR',GR)
@@ -137,24 +140,40 @@ subroutine input_parser
      call get_integer_parameter('number_groups',number_groups)
      call get_integer_parameter('number_eas',number_eas)
      call get_logical_parameter('include_epannihil_kernels',include_epannihil_kernels)
-     call get_logical_parameter('include_Ielectron_exp',include_Ielectron_exp)
-     call get_logical_parameter('include_Ielectron_imp',include_Ielectron_imp)
-     call get_logical_parameter('include_energycoupling_exp',include_energycoupling_exp)
-     call get_logical_parameter('include_energycoupling_imp',include_energycoupling_imp)
-     if (include_Ielectron_exp.and.include_Ielectron_imp) then
-        write(*,*) "You can't do ies both ways"
-        stop
+     call get_logical_parameter('include_nes_kernels',include_nes_kernels)
+     call get_integer_parameter('nes_evolution_type',tempint)
+     if (tempint.eq.0) then
+        include_Ielectron_exp = .false.
+        include_Ielectron_imp = .false.
+     else if (tempint.eq.1) then
+        include_Ielectron_exp = .true.
+        include_Ielectron_imp = .false.
+        if (include_nes_kernels.eqv..false.) then
+           stop "please enable nes kernel read"
+        endif
+     else if (tempint.eq.2) then
+        include_Ielectron_exp = .false.
+        include_Ielectron_imp = .true.
+        if (include_nes_kernels.eqv..false.) then
+           stop "please enable nes kernel read"
+        endif
+     else
+        stop "unknown value for nes_evolution_exp"
      endif
-     if (include_Ielectron_exp.or.include_Ielectron_imp) then     
-        include_Ielectron = .true.
+     call get_integer_parameter('energycoupling_evolution_type',tempint)
+     if (tempint.eq.0) then
+        include_energycoupling_exp = .false.
+        include_energycoupling_imp = .false.
+     else if (tempint.eq.1) then
+        include_energycoupling_exp = .true.
+        include_energycoupling_imp = .false.
+     else if (tempint.eq.2) then
+        include_energycoupling_exp = .false.
+        include_energycoupling_imp = .true.
+     else
+        stop "unknown value for energycoupling_evolution_exp"
      endif
-     if (include_energycoupling_exp.and.include_energycoupling_imp) then
-        write(*,*) "You can't do energy coupling both ways"
-        stop
-     endif
-     if (include_energycoupling_exp.or.include_energycoupling_imp) then     
-        include_energycoupling = .true.
-     endif
+
      call get_string_parameter('M1closure',M1closure)     
      call get_string_parameter('opacity_table',opacity_table)
      call get_integer_parameter('testcase',M1_testcase_number)
@@ -179,27 +198,27 @@ subroutine input_parser
            write(*,*) "Initial M1 reconstruction method not the same as specified in main parameters"
            stop
         endif
-        if (M1_phase1_ies_way.eq.0.and.(include_Ielectron)) then
+        if ((M1_phase1_ies_way.eq.0).and.(include_Ielectron_exp.or.include_Ielectron_imp)) then
            write(*,*) "Initial M1 inelastic electron scattering method not the same as specified in main parameters"
            stop
         endif
-        if (M1_phase1_ies_way.eq.1.and.include_Ielectron_imp) then
+        if (M1_phase1_ies_way.eq.1.and.(include_Ielectron_imp.or..not.include_Ielectron_exp)) then
            write(*,*) "Initial M1 inelastic electron scattering method not the same as specified in main parameters"
            stop
         endif
-        if (M1_phase1_ies_way.eq.2.and.include_Ielectron_exp) then
+        if (M1_phase1_ies_way.eq.2.and.(include_Ielectron_exp.or..not.include_Ielectron_exp)) then
            write(*,*) "Initial M1 inelastic electron scattering method not the same as specified in main parameters"
            stop
         endif
-        if (M1_phase1_encpl_way.eq.0.and.include_energycoupling) then
+        if (M1_phase1_encpl_way.eq.0.and.(include_energycoupling_exp.or.include_energycoupling_imp)) then
            write(*,*) "Initial M1 energy coupling method not the same as specified in main parameters"
            stop
         endif
-        if (M1_phase1_encpl_way.eq.1.and.include_energycoupling_imp) then
+        if (M1_phase1_encpl_way.eq.1.and.(include_energycoupling_imp.or..not.include_energycoupling_exp)) then
            write(*,*) "Initial M1 energy coupling method not the same as specified in main parameters"
            stop
         endif
-        if (M1_phase1_encpl_way.eq.2.and.include_energycoupling_exp) then
+        if (M1_phase1_encpl_way.eq.2.and.(include_energycoupling_exp.or..not.include_energycoupling_imp)) then
            write(*,*) "Initial M1 energy coupling method not the same as specified in main parameters"
            stop
         endif

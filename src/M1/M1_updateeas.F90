@@ -107,7 +107,7 @@ subroutine M1_updateeas
         endif
 
         !get electron chemical potential if scattering/epannihil is turned on
-        if (include_Ielectron.or.include_epannihil_kernels) then
+        if (include_Ielectron_exp.or.include_Ielectron_imp.or.include_epannihil_kernels) then
            keytemp = 1 !keep temperature, not resetting any hydro variables
            keyerr = 0       
            call nuc_eos_full(xrho,xtemp,xye,eosdummy(1),eosdummy(2),eosdummy(3), &
@@ -127,7 +127,7 @@ subroutine M1_updateeas
            xeta = elechem(k)/temp(k)
         endif
 
-        if (include_Ielectron) then
+        if (include_Ielectron_imp.or.include_Ielectron_exp) then
            inelastic_tempspectrum = 0.0d0
            if (log10(xrho).lt.nulibtable_logrho_min) then
               inelastic_tempspectrum = 0.0d0

@@ -159,10 +159,9 @@ module GR1D_module
   integer :: number_groups
   integer :: number_eas
   logical :: include_epannihil_kernels
-  logical :: include_Ielectron !internal
+  logical :: include_nes_kernels
   logical :: include_Ielectron_exp
   logical :: include_Ielectron_imp
-  logical :: include_energycoupling !internal
   logical :: include_energycoupling_exp
   logical :: include_energycoupling_imp
 

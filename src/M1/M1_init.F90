@@ -6,7 +6,7 @@ subroutine M1_init
        energy_gf, mev_to_erg,M1_maxradii,M1_imaxradii,length_gf,n1,x1,ghosts1, &
        ye,temp,rho_gf,x1i,number_groups,rho,eas,ghosts1,q_M1,nulib_energy_gf, &
        temp_mev_to_kelvin,number_species,volume,pi,M1_moment_to_distro,clite, &
-       hbarc_mevcm,M1_testcase_number,v_order,include_Ielectron, &
+       hbarc_mevcm,M1_testcase_number,v_order,include_nes_kernels, &
        M1_moment_to_distro_inverse,nulib_kernel_gf,number_species_to_evolve, &
        include_epannihil_kernels
   use nulibtable
@@ -15,7 +15,7 @@ subroutine M1_init
 
   integer i
 
-  call nulibtable_reader(opacity_table,include_Ielectron,include_epannihil_kernels)
+  call nulibtable_reader(opacity_table,include_nes_kernels,include_epannihil_kernels)
   
   !change units of emissivities, opacities, energies and inverse
   !energies to code units, then we only have to do it once these are
@@ -36,7 +36,7 @@ subroutine M1_init
   nulibtable_emissivities = max(-200.0d0,log10(10.0d0**(nulibtable_emissivities)*nulib_emissivity_gf))
   nulibtable_absopacity = log10(10.0d0**nulibtable_absopacity*nulib_opacity_gf)
   nulibtable_scatopacity = log10(10.0d0**nulibtable_scatopacity*nulib_opacity_gf)
-  if (include_Ielectron) then
+  if (include_nes_kernels) then
      nulibtable_Itable_Phi0 = log10(10.0d0**nulibtable_Itable_Phi0*nulib_kernel_gf)
      !Phi1 is stored as the ratio of Phi1/Phi0, so no log, no units
   endif

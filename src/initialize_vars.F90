@@ -47,10 +47,9 @@ subroutine initialize_vars
   number_groups = 0
   number_eas = 0
   include_epannihil_kernels = .false.
-  include_Ielectron = .false.
+  include_nes_kernels = .false.
   include_Ielectron_exp = .false.
   include_Ielectron_imp = .false.
-  include_energycoupling = .false.
   include_energycoupling_exp = .false.
   include_energycoupling_imp = .false.
   opacity_table = ""

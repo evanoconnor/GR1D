@@ -1246,7 +1246,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
            Stzone = (-sourceS(j,1)*oneM1en - sourceS(j,2)*oneM1flux + &
                 sourceS(j,3))/(implicit_factor*dts*alp2)
            
-           if (include_Ielectron) then
+           if (include_Ielectron_imp.or.include_Ielectron_exp) then
               Stnalpha = Stnalpha - onealp*ies_sourceterm(k,i,j,1)
            endif
            if (include_epannihil_kernels) then
@@ -1258,7 +1258,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
                 sourceS(j+number_groups,2)*oneM1flux + &
                 sourceS(j+number_groups,3))/(implicit_factor*dts*onealp*X2)
               
-           if (include_Ielectron) then
+           if (include_Ielectron_imp.or.include_Ielectron_exp) then
               Sr = Sr + ies_sourceterm(k,i,j,2)
            endif
            if (include_epannihil_kernels) then

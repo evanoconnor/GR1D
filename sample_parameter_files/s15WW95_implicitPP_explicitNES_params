@@ -75,11 +75,11 @@ number_eas		=	3			#number of opacity variables to read in
 M1closure		=	'ME'
 testcase		=	0			#if you want a test case set this to the
 							#test case number, along with M1test as "initial_data"
-include_epannihil_kernels =	1			#for full thermal treatment
-include_Ielectron_exp	=	1			#Inelastic scattering on electrons, explicit?
-include_Ielectron_imp	=	0			#Inelastic scattering on electrons, implicit?
-include_energycoupling_exp	=	1		#energy coupling, explicit?
-include_energycoupling_imp	=	0		#energy coupling, implicit?
+include_epannihil_kernels =	1			#for full nux thermal treatment
+include_nes_kernels	= 	1			#to read in inelastic neutrino electron scattering kernels
+nes_evolution_type	=	1			#0: no nes, 1: explicit nes, 2: implicit nes
+energycoupling_evolution_type =	1			#0: no coupling, 1: explicit coupling, 2: implicit coupling
+
 
 M1_control		=	1			#1 means you must specify the settings for each phase
 							# in the parameter file, collapse, bounce and postbounce.	
@@ -87,7 +87,7 @@ M1_control		=	1			#1 means you must specify the settings for each phase
 M1_phase1phase2_density =	1.0d12			#central density to switch to phase 2
 M1_phase2phase3_pbtime  =	0.02d0			#post bounce time to switch to phase3
 
-M1_phase1_reconstruction =	'tvd'			#reconstruction method for both matter and neutrinos
+M1_phase1_reconstruction =	'tvd'			#reconstruction method for both matter and neutrinos (phase1 must match above)
 M1_phase2_reconstruction =	'ppm'
 M1_phase3_reconstruction =	'ppm'
 
@@ -99,11 +99,11 @@ M1_phase1_ns		=	1			#number of species to evolve
 M1_phase2_ns		=	3
 M1_phase3_ns		=	3
 
-M1_phase1_ies_way	=	1			#1 is explicit inelastic scattering, 2 is implicit
+M1_phase1_ies_way	=	1			#0 is none, 1 is explicit inelastic scattering, 2 is implicit (phase1 must match above)
 M1_phase2_ies_way	=	1			
 M1_phase3_ies_way	=	1
 
-M1_phase1_encpl_way	=	1			#1 is explicit energycoupling, 2 is implicit
+M1_phase1_encpl_way	=	1			#0 is none, 1 is explicit energycoupling, 2 is implicit (phase1 must match above)
 M1_phase2_encpl_way	=	1			
 M1_phase3_encpl_way	=	1
 

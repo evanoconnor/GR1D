@@ -32,7 +32,6 @@ subroutine M1test
      include_epannihil_kernels = .false.
      include_Ielectron_exp = .false.
      include_Ielectron_imp = .false.
-     include_Ielectron = .false.
      include_energycoupling_exp = .false.
      include_energycoupling_imp = .false.
      M1_do_backwardfix = 1
@@ -95,7 +94,6 @@ subroutine M1test
      include_epannihil_kernels = .false.
      include_Ielectron_exp = .false.
      include_Ielectron_imp = .false.
-     include_Ielectron = .false.
      include_energycoupling_exp = .false.
      include_energycoupling_imp = .false.
      M1_do_backwardfix = 1
@@ -143,7 +141,6 @@ subroutine M1test
      include_epannihil_kernels = .false.
      include_Ielectron_exp = .false.
      include_Ielectron_imp = .false.
-     include_Ielectron = .false.
      include_energycoupling_exp = .false.
      include_energycoupling_imp = .false.
 
@@ -211,10 +208,9 @@ subroutine M1test
      include_epannihil_kernels = .false.
      include_Ielectron_exp = .false.
      include_Ielectron_imp = .false.
-     include_Ielectron = .false.
      include_energycoupling_exp = .false.
      v_order = -1
-     include_energycoupling_imp = .true.
+     include_energycoupling_imp = .false.
      number_species_to_evolve = 1
      M1_do_backwardfix = 0
 
@@ -337,7 +333,6 @@ subroutine M1test
      include_epannihil_kernels = .false.
      include_Ielectron_exp = .false.
      include_Ielectron_imp = .false.
-     include_Ielectron = .false.
      include_energycoupling_exp = .false.
      include_energycoupling_imp = .false.
      number_species_to_evolve = 1
@@ -395,7 +390,6 @@ subroutine M1test
      include_epannihil_kernels = .false.
      include_Ielectron_exp = .false.
      include_Ielectron_imp = .false.
-     include_Ielectron = .false.
      include_energycoupling_exp = .false.
      include_energycoupling_imp = .false.
      number_species_to_evolve = 1

@@ -1,0 +1,480 @@
+
+\documentclass[10pt,nofootinbib]{article}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{url}
+\usepackage[comma,numbers,sort&compress]{natbib}
+
+\setlength{\textheight}{24cm}
+\setlength{\oddsidemargin}{.5cm}
+\setlength{\textwidth}{15.4cm}
+\setlength{\topmargin}{-2cm}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0.1cm}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{\code{GR1D}:\\ An Open-Source Code for Stellar Collapse\\
+ and Black Hole Formation}
+\author{Evan\ O'Connor \& Christian\ D.\ Ott\\e-mail: {\tt GR1D@stellarcollapse.org}}
+\begin{document}
+
+%\maketitle
+\begin{center}
+\Large \bf GR1D v2.0 \rm \normalsize
+
+ \bf Nov 20th, 2014 \rm
+
+ \large An Open-Source Neutrino Radiation Hydrodynamics Code for
+ Stellar Collapse and Black Hole Formation \normalsize
+
+Evan\ O'Connor, North Carolina State University \& Christian\ D.\ Ott, California Institute of Technology
+
+e-mail: {\tt GR1D@stellarcollapse.org}
+
+\end{center}
+
+
+\section{Disclaimer and Software License}
+\code{GR1D} is open source and may be used at your own risk.  The code
+comes with absolutely no warranty and we are unable to guarantee that
+we will be able to provide support or help if you run into problems
+running it. If you decide to use \code{GR1D} in published work, it is
+YOUR responsibility to test the code and ensure its physical
+correctness and consistency. 
+
+{\bf If you find bugs or inconsistencies, please let us know via
+  e-mail to \\ {\tt GR1D@stellarcollapse.org}\,!} This is particularly
+probable if you are using \code{GR1D} in a way we have not thought of
+yet.  We are also open for collaboration on extending \code{GR1D} to
+include more physics. However, please avoid contacting us with
+questions like: ``How do I get \code{GR1D} to read in my stellar
+profile?'' Just remember that \code{GR1D} is plain Fortran 90 and that
+basic knowledge of that language and the ability to use a text editor
+will solve this problem for you.
+
+While \code{GR1D} is open source, its copyright is held by Evan
+O'Connor and Christian D.\ Ott. In the absence of suitable open
+scientific software licenses, we release this version of \code{GR1D}
+to the community under the {\bf Creative Commons}
+\emph{attribution-noncommercial-share} alike license whose details can
+be found at
+\url{http://creativecommons.org/licenses/by-nc-sa/3.0/us}. Essentially,
+you may use \code{GR1D}, but must make reference to our work, must not
+use \code{GR1D} for commercial purposes, and any code including or
+using our routines or part of them may be made publically available,
+and if so, only under the same license.
+
+When using \code{GR1D} in published work, please make reference
+to the paper describing it:
+
+\hspace{2cm}\parbox{12cm}{E.\ O'Connor and C.\ D.\ Ott, \emph{A New Spherically-Symmetric
+General Relativistic Hydrodynamics Code for Stellar Collapse to Neutron
+Stars and Black Holes}, Class. Quantum Grav., 2009 27 114103}
+
+When using the neutrino transport model of \code{GR1D} in published
+work, in addition to the above reference, please make reference to
+the paper describing it:
+
+\hspace{2cm}\parbox{12cm}{E.\ O'Connor, \emph{An Open-Source Neutrino
+    Radiation Hydrodynamics Code for Core-Collapse Supernovae},
+  \emph{eubmitted to The Astrophysical Journal: Supplement Series},
+  2014 arXiv:1411.????}
+
+\section{Compiling:}
+\subsection{make.inc}
+All settings necessary for successful compilation of \code{GR1D} must
+go into the file {\emph{make.inc}} which is read by the make
+system. In particular, the compiler, compiler flages (e.g.,
+optimization, debugging options), and the location of external library
+include and library files must be provided. \code{GR1D} is written in
+Fortran 90.  The compiler options must be set in the {\it make.inc}
+file. The authors suggest using the \code{MESA SDK} available at
+\url{http://www.astro.wisc.edu/~townsend/static.php?ref=mesasdk}.
+
+To activate support for finite-temperature EOS and neutrino leakage,
+the following preprocessor definitions must be set in \emph{make.inc}:\\
+{\tt HAVE\_NUC\_EOS=1}\\
+{\tt HAVE\_LEAK\_ROS=1}\\
+For the neutrino transport module you must have\\
+{\tt HAVE\_LAPACK=1}\\
+in addition to setting the LAPACK library above.
+
+\subsection{External libraries}
+\code{GR1D} requires a set of \code{HDF5} libraries and include files
+compiled for use with your Fortran 90 compiler.  We use \code{HDF5}
+libraries to write restart files and also to read in our EOS and
+opacity tables.  The source files for \code{HDF5} are available from
+the HDF5 Group at \url{http://www.hdfgroup.org/HDF5/} along with
+straightforward installation instructions.  The path to the libraries
+and include files must be set in the {\it make.inc} file.  This
+library is included with the \code{MESA SDK} linked above.
+
+\code{GR1D} also requires \code{LAPACK} for the matrix inversion and
+the path must be set in the \emph{make.inc} file.  Here is the
+\code{LAPACK} website, \url{http://www.netlib.org/lapack/}.  The
+\code{LAPACK} libraries are also available in the \code{MESA SDK}
+
+\subsection{Compiling \& Running}
+Once all the settings have been set, running {\emph{$>$make}} will compile
+the code.  If settings in {\emph{make.inc}} have changed, first run
+{\emph{$>$make clean}} then {\emph{$>$make}}.  To run \code{GR1D},
+simply enter the command {\emph{$>$./GR1D}}.
+
+\section{{\it.short} initial data format}
+\code{GR1D} uses the '.short' format for input stellar profiles. On
+the first line of the input file is the number of lines in the input
+file.  The rest of the file consists of lines with 8 columns each: (1)
+zone index, (2) enclosed mass (g), (3) radial coordinate (cm), (4)
+temperature (K), (5) density (g/cm$^3$), (6) radial velocity (cm/s),
+(7) $Y_e$, and (8) $\Omega$ (rad/s). We include in this version of
+\code{GR1D} an $n=3$ polytrope with a central density of
+$5\times10^{10}$~g/cm$^3$ and total mass of 1.435~$M_\odot$. The
+polytrope may be used for collapse calculations with the hybrid
+EOS. For runs with finite-temperature EOS and neutrino leakage, a
+presupernova stellar profile is necessary.  Various presupernova
+models are available for download from stellar evolution groups,
+(c.f. {\tt http://www.stellarcollapse.org/other\_resources} but note
+different groups define variables differently, zone center or zone
+interface values for example, {\emph{src/map\_profile.F90}} may need to
+be adjusted accordingly). For example, there is a parameter setting
+for the common \code{KEPLER} models that assumes the radial coordinate
+is the outer edge of the zone rather than the center.  This can make a
+large difference depending on the intial profile, be careful.
+
+\section{Sample parameter files}
+We include sample parameter files for test cases and some collapse
+simulations.  These follow closely the simulations presented in our
+\code{GR1D} methods paper, \cite{oconnor:10}, and include: (1)
+Shocktube problems \#1 \& \#2, (2) Newtonian Sedov blast wave, (3)
+Oppenheimer-Snyder Collapse of a pressureless dust ball, (4)
+Hybrid-EOS core collapse of a progentior model, (5) Microphysical EOS
+core collapse with neutrino leakage/heating of a progenitor
+model. There are also sample parameter files for the neutrino
+radiation transport that reproduce the results in \cite{oconnor:14}.
+
+The sample parameter files live in the subdirectory 
+\emph{sample\_parameter\_files} and must be copied into the
+file \emph{parameters} in the code's main directory. 
+
+\section{Grid Types}
+\label{sec:gridtypes}
+\code{GR1D} has several pre-programmed grid arrangements we find work
+well for different situations.  \code{GR1D} fully supports non-equally
+spaced grids and defines all variables at cell centers.  Available
+grids through the {\tt gridtype} parameter are:
+
+\begin{tabular}{lr}
+\emph{unigrid}&\parbox[t]{13cm}{Devides the domain into zones of equal
+  size.}\\ 
+\hline
+\emph{log}&\parbox[t]{13cm}{Logarthmic progression of the zone size
+  starting from the center out to the domain edge.  The central grid
+  spacing in 'log' is set to the parameter {\tt
+    grid\_custom\_dx1}}\\ 
+
+\hline
+
+\emph{custom}&\parbox[t]{13cm}{Sets up a region of constant zone width
+  near the origin and a logorthmic progression outside.  The value for
+  the inner region zone widths is set through {\tt grid\_custom\_dx1}
+  and the extent of this inner region is set through {\tt
+    grid\_custom\_rad1}.}\\
+
+\hline
+
+\emph{custom2}&\parbox[t]{13cm}{Follows 'custom' closely, but the {\tt
+    grid\_custom\_number} innermost zones have zone widths
+  logorithically increasing to a value of {\tt grid\_custom\_inner} in
+  the innermost zone.  }\\
+
+\end{tabular}
+
+\section{Restart Files}
+\code{GR1D} can create restart files that can be used to restart a
+simulation at a later time.  These files are in \code{HDF5} format.
+The files are checked for consistency of key parameters between
+original run and restart. Hence, it is important that the parameter
+file of the restarted run is the same as the original. If you happen
+to need to change these parameters between restarts, please comment
+out the parameter checks.  Older restart files may not work with
+updated version of GR1D.
+
+\section{$Y_e(\rho)$}
+\label{sec:yeofrhofit}
+\code{GR1D} implements a parametrized $Y_e(\rho)$ for the prebounce
+evolution or stellar cores.  \code{GR1D} can interpolate a numerical
+profile or use the fitting formula of \cite{liebendoerfer:05fakenu}.  The
+fitting constants are set in the parameter file.
+
+\section{Rotation}
+If rotation is included, an option of analytically setting the angular
+velocity profile is available through the following formula,
+\begin{equation}
+\Omega = \Omega_c / \left[ 1 + \left({r \over A}\right)^2\right]
+\label{eq:omega}
+\end{equation}
+$\Omega_c$ and $A$ are set in the parameter file.  In addition to
+this, $\Omega$ can be read in from the initial stellar profile.
+
+\section{Neutrino Transport}
+
+As of version 2, \code{GR1D} now has a neutrino transport module.  The
+associated paper is \cite{oconnor:14} and is the main reference for
+all of the details. Below we describe the possible parameter file settings.
+
+\section{Parameter File}
+Here we list all the options in the parameter file and give a brief
+description. 
+
+\begin{itemize}
+\item{{\bf Job Parameters}}
+\begin{itemize}
+\item{{\tt jobname}: text, Description of job.}
+\item{{\tt GR}: integer, \code{1}: for GR, \code{0}: for Newtonian}
+\item{{\tt outdir}: text, location of stored files, must exist, {\it
+    Data/} suggested}
+\item{{\tt initial\_data}: text, type of simulation: 'Collapse',
+  'OSC', 'Sedov', 'Shocktube','M1test'}
+\item{{\tt profile\_name}: text, location of input profile used in 'Collapse' simulations}
+\item{{\tt profile\_type}: integer, \code{1}: for .short format}
+\item{{\tt gravity\_active}: integer, \code{0}: for no gravity, \code{1}: for gravity}
+\item{{\tt ntmax}: integer, maximum hydro steps}
+\item{{\tt tend}: real, maximum simulation time (seconds)}
+\end{itemize}
+\item{{\bf Grid Parameters}}
+\begin{itemize}
+\item{{\tt geometry}: integer, \code{1}: for linear grid, \code{2}: for spherical}
+\item{{\tt gridtype}: text, type of grid arrangement: 'unigrid', 'log', 'custom', 'custom2'.  See \ref{sec:gridtypes} for description}.
+\begin{itemize}
+\item{{\tt grid\_custom\_dx1}: real, (cm)}
+\item{{\tt grid\_custom\_rad1}: real, (cm)}
+\item{{\tt grid\_custom\_number}: integer}
+\item{{\tt grid\_custom\_inner}: real, (cm)}
+\end{itemize}
+\item{{\tt rmax\_from\_profile}: integer, \code{0}: specify rmax in {\tt grid\_rmax}, \code{1}: set rmax from density in {\tt rho\_cut}}.
+\item{{\tt rho\_cut}: real, density to stop grid at (g/cm$^3$)}.
+\item{{\tt grid\_rmax}: real, radius to stop grid at (cm)}
+\item{{\tt radial\_zones}: integer, number of radial zones}
+\item{{\tt ghosts1}: integer, number of ghost zones}
+\end{itemize}
+\item{{\bf Hydro Parameters}}
+\begin{itemize}
+\item{{\tt do\_hydro}: integer, \code{0}: no hydrodynamic step \code{1}: do hydrodynamic step}
+\item{{\tt cffac}: real, Courant factor}
+\item{{\tt iorder\_hydro}: integer, order of Runge-Kutta}
+\item{{\tt reconstruction\_method}: text, reconstruction method: 'ppm', 'tvd', 'pc'}
+\item{{\tt ppm\_origin\_TVD}: integer, how many zones of TVD at the origin}
+\item{{\tt tvd\_limiter}: text, TVD limiter: 'MC', 'minmod'}
+\item{{\tt flux\_type}: text, Riemann solver, only 'HLLE'}
+\end{itemize}
+\item{{\bf EOS Parameters}}
+\begin{itemize}
+\item{{\tt eoskey}: integer, type of EOS: \code{1}: Hybrid EOS, \code{2}: Polytrope EOS, \code{3}: Nuclear EOS, \code{4}: Gamma-Law EOS}
+\item{{\tt eos\_table\_name}: text, location of {\it .h5} Nuclear EOS table}
+\item{{\tt hybridgamma\_th}: real, Hybrid EOS thermal index $\Gamma_{th}$}
+\item{{\tt hybridgamma1}: real, Hybrid EOS low density index $\Gamma_{1}$}
+\item{{\tt hybridgamma2}: real, Hybrid EOS high density index $\Gamma_{2}$}
+\end{itemize}
+\item{{\bf Output Parameters}}
+\begin{itemize}
+\item{{\tt ntinfo}: integer, prints info to stdout after this many hydro steps}
+\item{{\tt dynamic\_output\_control}: integer, \code{0}: output frequency stay constant, \code{1}: increases output near bounce and black hole formation}.
+\item{{\tt vs\_mass}: integer, \code{0}: for {\it .xg} files versus radial coordinate, \code{1}: for {\it .xg} files versus enclosed baryonic mass}
+\item{{\tt small\_output}: integer, \code{0}: output all {\it .xg} files, \code{1}: output smaller subset of {\it .xg} files}
+\item{{\tt dtout}: real, time between output of {\it .xg} files (seconds)}
+\item{{\tt dtout\_scalar}: real, time between output of {\it .dat} files (seconds)}
+\item{{\tt ntout}: integer, hydro steps between output of {\it .xg} files, (-1 to ignore)}
+\item{{\tt ntout\_scalar}: integer, hydro steps between output of {\it .dat} files (-1 to ignore)}
+\end{itemize}
+\item{{\bf Restart Parameters}}
+\begin{itemize}
+\item{{\tt ntout\_restart}: integer, hydro steps between output of {\it .h5} restart files (-1 to ignore)}
+\item{{\tt dtout\_restart}: real, time between output of {\it .h5} restart files (seconds)}
+\item{{\tt do\_restart}: integer, \code{0}: no restart, \code{1}: restart}
+\item{{\tt restart\_file\_name}: text, location of {\it .h5} file to restart from}
+\end{itemize}
+\item{{\bf M1 Parameters}}
+\begin{itemize}
+\item{{\tt do\_M1}: integer, 0 disables transport, 1 enables it}
+\item{{\tt v\_order}: integer, -1 full velocity dependence, 0 for none}
+\item{{\tt extraction\_radii}: real, radii to evolve neutrinos out to and where data is extracted}
+\item{{\tt number\_species}: integer, number of neutrino species, currently only 3 works without minimal adjustment}
+\item{{\tt number\_groups}: integer, number of neutrino energy groups, must match table}
+\item{{\tt opacity\_table}: string, path to nulib opacity table}
+\item{{\tt number\_eas}: integer, number of variables in the eas dataset of the nulib table, usually 3}
+\item{{\tt M1closure}: string, denotes closure type, only a couple implemented}
+\item{{\tt testcases}: integer, denotes the number of testcase to perform, initial\_data must be 'M1test'}
+\item{{\tt include\_epannihil\_kernels}: integer, 1 for including nux pair produciton with the kernels (triggers read from table)}
+\item{{\tt include\_nes\_kernels}: integer, 1 for including neutrino electron scattering with kernels (triggers read from table)}
+\item{{\tt nes\_evolution\_type}: integer, 0 for no inelastic scattering, 1 for including neutrino electron scattering explicitly, 2 for implicitly}
+\item{{\tt energy\_coupling\_type}: integer, 0 for no energy coupling, 1 for including energy coupling explicitly, 2 for implicitly}
+\item{{\tt M1\_control}: integer, 0 for no control, parameters stay constant. 1 for primative control, parameters change as below}
+\begin{itemize}
+\item{{\tt M1\_phase1phase2\_density}: real, central density that triggers phase 2}
+\item{{\tt M1\_phase2phase3\_pbtime}: real, post bounce time that triggers phase 3}
+\item{{\tt M1\_phase1\_reconstruction}: string, reconstruction method for both matter and neutrinos (phase 1, value must match the value given above)}
+\item{{\tt M1\_phase2\_reconstruction}: string, reconstruction method for both matter and neutrinos (phase 2)}
+\item{{\tt M1\_phase3\_reconstruction}: string, reconstruction method for both matter and neutrinos (phase 3)}
+\item{{\tt M1\_phase1\_cffac}: real, Courant factor, (phase 1)}
+\item{{\tt M1\_phase2\_cffac}: real, Courant factor, (phase 2, typically needs to be reduced near bounce)}
+\item{{\tt M1\_phase3\_cffac}: real, Courant factor, (phase 3)}
+\item{{\tt M1\_phase1\_ns}: integer, number of species to evolve (phase 1; 1 is only nue, 3 is all three)}
+\item{{\tt M1\_phase2\_ns}: integer, number of species to evolve (phase 2; 1 is only nue, 3 is all three)}
+\item{{\tt M1\_phase3\_ns}: integer, number of species to evolve (phase 3; 1 is only nue, 3 is all three)}
+\item{{\tt M1\_phase1\_ies\_way}: integer, 0 for no inelastic scattering, 1 for including neutrino electron scattering explicitly, 2 for implicitly (phase 1, value must match the value given above)}
+\item{{\tt M1\_phase2\_ies\_way}: integer, 0 for no inelastic scattering, 1 for including neutrino electron scattering explicitly, 2 for implicitly (phase 2)}
+\item{{\tt M1\_phase3\_ies\_way}: integer, 0 for no inelastic scattering, 1 for including neutrino electron scattering explicitly, 2 for implicitly (phase 3)}
+\item{{\tt M1\_phase1\_encpl\_way}: integer, 0 for no energy coupling, 1 for including energy coupling explicitly, 2 for implicitly (phase 1, value must match the value given above)}
+\item{{\tt M1\_phase2\_encpl\_way}: integer, 0 for no energy coupling, 1 for including energy coupling explicitly, 2 for implicitly (phase 2)}
+\item{{\tt M1\_phase3\_encpl\_way}: integer, 0 for no energy coupling, 1 for including energy coupling explicitly, 2 for implicitly (phase 3)}
+\end{itemize}
+\end{itemize}
+\item{{\bf Leakage Parameters}}
+\begin{itemize}
+\item{{\tt fake\_neutrinos}: integer, \code{0}: for no neutrino physics, \code{1}: for neutrino physics}
+\item{{\tt ye\_of\_rho}: integer, \code{0}: no $Y_e(\rho)$, \code{1}: use $Y_e(\rho)$ prescription}
+\begin{itemize}
+\item{{\tt ye\_profile\_name}: text, profile name of numerical $Y_e(\rho)$ table to interpolate}
+\item{{\tt do\_yeofrhofit}: integer, \code{0}: use profile \code{1}: use fit values, see section \ref{sec:yeofrhofit}}
+\item{{\tt yeofrho\_rho1}: real, lower density limit of $Y_e(\rho)$ fit, (g/cm$^3$)}
+\item{{\tt yeofrho\_rho2}: real, upper density limit of $Y_e(\rho)$ fit, (g/cm$^3$)}
+\item{{\tt yeofrho\_ye1}: real, $Y_e$ at lower density limit}
+\item{{\tt yeofrho\_ye2}: real, $Y_e$ at upper density limit}
+\item{{\tt yeofrho\_yec}: real, $Y_e$ correction factor}
+\end{itemize}
+\item{{\tt neutrino\_pressure}: integer, \code{0}: no neutrino pressure, \code{1}: include neutrino pressure}
+\item{{\tt do\_leak\_ros}: integer, \code{0}: no neutrino leakage/heating, \code{1}: include neutrino leakage/heating}
+\item{{\tt do\_heating}: integer, \code{0}: only neutrino leakage, \code{1}: include heating}
+\item{{\tt heat\_fac}: real, ad-hoc factor for scaling heating}
+\item{{\tt do\_NNBrem}: integer, \code{0}: do not include Nucleon-Nucleon Bremsstrahlung, \code{1}: include it}
+\end{itemize}
+\item{{\bf Atmosphere Parameters}}
+\begin{itemize}
+\item{{\tt atmo\_rho\_rel\_min}: real, sets the minimum relative value of the density for the atmosphere (fraction).}
+\item{{\tt atmo\_rho\_abs\_min}: real, sets the absolute value of the atmosphere density, recommended value, $\sim$10\% less then {\tt rho\_cut}.}
+\item{{\tt atmo\_fac}: real, fraction of atmosphere density to above densities.} 
+\end{itemize}
+\item{{\bf Rotation}}
+\begin{itemize}
+\item{{\tt do\_rotation}: integer, \code{0}: no rotation, \code{1}: rotation included}
+\item{{\tt set\_omega}: integer, \code{0}: use rotation from {\it .short} file, \code{1}: analytically set omega through Eq.~\ref{eq:omega}}
+\item{{\tt omega\_c}: real, central value of omega in Eq.~\ref{eq:omega}}
+\item{{\tt omega\_A}: real, radial factor in Eq.~\ref{eq:omega}}
+\end{itemize}
+\item{{\bf Test problems}}
+\begin{itemize}
+\item{{\tt shocktube\_problem}: integer, various initial shocktube settings, see {\it src/shocktube.F90}}
+\end{itemize}
+\end{itemize}
+
+\section{Version 1.01, 1.02, 1.03, \& v2.0 Updates}
+\subsection{Physics Updates}
+\begin{itemize}
+\item We correct the source terms for the neutrino leakage ({\it
+    src/leakage\_rosswog/leak\_rosswog.F90}) and neutrino pressure
+  contributions ({\it src/neutrino\_pressure.F90}) to the evolution
+  equations.
+\item v1.01 now includes Newtonian neutrino leakage
+\item v1.0 had issues when leakage was preformed near the outer edge
+  of the grid (for example with neutron stars).  We have fixed all the
+  loop bounds and initialized previously uninitialized variables. 
+\item We correct the Newtonian source terms for neutrino pressure and
+  leakage (v1.0 missing $\sqrt{\gamma}=r^2$)
+\item For {\tt GR}=1, v1.01 now fully includes the effect of the
+  moving fluid on the redshifted luminosity of the neutrinos ({\it
+    src/leakage\_rosswog/leak\_rosswog.F90}).
+\item {\emph{custom2}} grid setup had a bug in v1.0 that would put the
+  switch between constant grid and log grid at larger radii then
+  requested.
+\item v1.01 leakage scheme now uses the neutron rest mass as the
+  conversion between $\rho$ and baryon density instead of the atomic
+  mass unit.  This is to be more consistant with our EOS tables. 
+\item $T/|W_{grav}|$ and $J$ were defined wrong in v1.0, factors of
+  $2/3 = \int \sin(\theta)^3 d\theta / \int \sin(\theta)d\theta$ to
+  account for averages over the sphere.
+\item $T/|W_{grav}|$ now defined for Newtonian simulations.
+\item $T/|W_{grav}|$ is now calculated as a function of $r$ and output
+  both as an {\emph{.xg}} file and a time series file
+  ({\emph{ToverW\_edge.dat}}, with the value at the grid's outer edge).
+\item v1.01 will convert the mass variable in the initial data to
+  solar masses if not already.
+\item v1.01 fixes a reconstruction bug where the temperature was being
+  set to the value at the interface, v1.02 fixed a bug that wasn't
+  apparent because of this reconstruction bug, keytemp=0 is now used
+  exclusively to maintain accuracy in the eps variable.
+\item From tests we have been performing, we changed how we evolve our
+  angular momentum.  Our conserved variable is now $S_\phi = \rho h W^2
+  r v_\varphi$ this, along with the new source terms gives perfect
+  angular momentum conservation for Newtonian simulations (as the
+  source term is 0) and much better (factor of 40) angular momentum
+  conservation for GR runs, as there are still source terms required
+  but the largest is now gone.  For Newtonian runs we reconstruct
+  $\Omega$ at the interfaces and convert back to $v_\varphi$, for our
+  GR runs this leads to problems as we are effectively evolving
+  $\Omega r^2$ and near the origin one can evolve to negative
+  velocities if the wrong variable is reconstructed.  Hence we
+  reconstruct $v_\varphi$ at the interfaces, note the side effect of
+  this is a slight divergence of $\Omega$ near the orgin ($r<1$km),
+  while visuallly unappealing, this does not contribute to the angular
+  momentum as for a constant density sphere the total angular momentum
+  is $\propto r^5$. Given this, we recommend using the {\tt
+    grid\_type} = 'custom' option for rotating runs which increases
+  resolution near the origin.
+\item v1.03 now includes the option of include Nucleon-Nucleon
+  Bremsstrahlung in the leakage scheme, the appropiate parameter file
+  variable must be changed to \code{1} from the default value of
+  \code{0}.
+\item v2.0 now includes a neutrino transport scheme.
+\end{itemize}
+
+\subsection{Useability Updates}
+\begin{itemize}
+\item In v1.0, some grids would be rejected by the accrection analysis,
+in v1.01 this is corrected and \code{GR1D} now gives a warning and
+disables the accretion analysis for simulations with $r_{max} <
+300$~km this can be editted manually in {\it src/analysis.F90}.
+\item Also in the accrection analysis, bus errors could be generated
+  for particular grid set ups, this was do to improper initialization
+  and has been corrected.
+\item In v1.0 the shock radius was determined by locating the $r$
+  corresponding to the max absolute velocity.  This method fails for
+  exploding stars and now is found locating the $r$ corresponding to
+  the minimum velocity which will be the material directly upstream of
+  the shock.  As of v1.03, the shock radius and zone index of the
+  shock is now included in the restart file.  {\bf{Old restart files
+      will NOT be valid as the shock radius values will not be stored.}}
+\item In v1.0 the statement 'Using Ye(rho) fit formula' was printed
+  for a given set of neutrino parameters but not actually used.
+\item The conversion of units for $\Omega$ was done incorrectly for
+  the output file {\emph{omega.xg}}.
+\item We note that many pre-supernova input files define their
+  quantities at different locations (cell interface vs. cell center),
+  this can make a difference, for example, in the iron core mass of
+  the initial profile if interpolated incorrectly.  \code{GR1D}
+  assumes the radial coordinate and density are both cell centered,
+  adjustments should be made if this is not the case (e.g., the
+  Woosley and Weaver, 1995 and Woosley et al., 2002 presupernova models).
+\end{itemize}
+
+{\footnotesize \begin{thebibliography}{104}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{{\tt #1}}\fi
+
+\bibitem[{O'Connor \& Ott}(2010)]{oconnor:10}
+E.~O'Connor \& C.~D.~Ott,
+\newblock {\em Class. Quantum Grav.}, 2010 27 114103.
+
+\bibitem[{O'Connor}(2014)]{oconnor:14}
+E.~O'Connor,
+\newblock {\em submitted to ApJS}, 2014 arXiv:1411.????.
+
+\bibitem[{Liebend{\"o}rfer}(2005)]{liebendoerfer:05fakenu}
+M.~{Liebend{\"o}rfer}.
+\newblock {\em Astrophys. J.}, {\bf 633}, 1042, 2005.
+\end{thebibliography}
+\end{document}

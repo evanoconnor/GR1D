@@ -877,7 +877,7 @@ subroutine M1_explicitterms(dts,implicit_factor)
                  R0in = 0.5d0*ies(k,i,j_prime,j,1)
                  R1in = 1.5d0*ies(k,i,j_prime,j,2)
                  
-                 !Note, I quickly tested the vlaues of these cutoffs.
+                 !Note, I quickly tested the values of these cutoffs.
                  !Turns out, 1e13 works better than 5e12.  It does not
                  !lead to instability in the core but does give better
                  !agreement when the neutrinosphere start climbing in

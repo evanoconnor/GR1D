@@ -57,10 +57,9 @@ testcase		=	9		#if you want a test case set this to the
 						#test case number, along with M1test as "initial_data"
 
 include_epannihil_kernels =	0		#for full thermal treatment - forced by M1_testcases.F90
-include_Ielectron_exp	=	0		#Inelastic scattering on electrons, explicit? - forced by M1_testcases.F90
-include_Ielectron_imp	=	0		#Inelastic scattering on electrons, implicit? - forced by M1_testcases.F90
-include_energycoupling_exp	=	0	#energy coupling, explicit? - forced by M1_testcases.F90
-include_energycoupling_imp	=	0	#energy coupling, implicit? - forced by M1_testcases.F90
+include_nes_kernels	= 	0		#to read in inelastic neutrino electron scattering kernels - forced by M1_testcase.F90
+nes_evolution_type	=	0		#0: no nes, 1: explicit nes, 2: implicit nes - forced by M1_testcase.F90
+energycoupling_evolution_type =	1		#0: no coupling, 1: explicit coupling, 2: implicit coupling - forced by M1_testcase.F90
 
 M1_control		=	0		#1 means you must specify the settings for each phase
 						# in the parameter file, collapse, bounce and postbounce.	
