@@ -292,9 +292,9 @@ subroutine M1_explicitterms(dts,implicit_factor)
                  
                  if (vp(k)*vm(k+1).gt.0.0d0) then
                     if (vp(k).lt.0.0d0) then
-                       advected_energy = 4.0d0*Wm(k+1)**2*vm(k+1)*Xm(k+1)*(Jkplus1)/(3.0d0)
+                       advected_energy = 4.0d0*Wm(k+1)**2*vm(k+1)*Xm(k+1)*Jkplus1*onethrd
                     else
-                       advected_energy = 4.0d0*Wp(k)**2*vp(k)*Xp(k)*(Jk)/(3.0d0)
+                       advected_energy = 4.0d0*Wp(k)**2*vp(k)*Xp(k)*Jk*onethird
                     endif
                  else
                     advected_energy = 0.0d0
@@ -311,12 +311,17 @@ subroutine M1_explicitterms(dts,implicit_factor)
                  else
                     diffusive_flux = -1.0d0/(sqrt(1.0d0-v1(k)**2)*3.0d0*kappa_inter)*(Jkplus1-Jk)/(x1(k+1)-x1(k))
                  endif
-           
-                 if (v1p(k).lt.0.0d0) then
-                    advected_energy = 4.0d0*oneWm**2*v1m(k+1)*Jkplus1/3.0d0
+
+                 if (v1p(k)*v1m(k+1).gt.0.0d0) then
+                    if (v1p(k).lt.0.0d0) then
+                       advected_energy = 4.0d0*oneWm**2*v1m(k+1)*Jkplus1*onethird
+                    else
+                       advected_energy = 4.0d0*oneWp**2*v1p(k)*Jk*onethird
+                    endif
                  else
-                    advected_energy = 4.0d0*oneWp**2*v1p(k)*Jk/3.0d0
+                    advected_energy = 0.0d0
                  endif
+
               endif
                  
            else if (v_order.eq.0) then
