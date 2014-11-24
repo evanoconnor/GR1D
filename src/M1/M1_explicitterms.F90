@@ -292,7 +292,7 @@ subroutine M1_explicitterms(dts,implicit_factor)
                  
                  if (vp(k)*vm(k+1).gt.0.0d0) then
                     if (vp(k).lt.0.0d0) then
-                       advected_energy = 4.0d0*Wm(k+1)**2*vm(k+1)*Xm(k+1)*Jkplus1*onethrd
+                       advected_energy = 4.0d0*Wm(k+1)**2*vm(k+1)*Xm(k+1)*Jkplus1*onethird
                     else
                        advected_energy = 4.0d0*Wp(k)**2*vp(k)*Xp(k)*Jk*onethird
                     endif
