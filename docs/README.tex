@@ -89,10 +89,11 @@ the paper describing it:
 All settings necessary for successful compilation of \code{GR1D} must
 go into the file {\emph{make.inc}} which is read by the make
 system. In particular, the compiler, compiler flages (e.g.,
-optimization, debugging options), and the location of external library
-include and library files must be provided. \code{GR1D} is written in
-Fortran 90.  The compiler options must be set in the {\it make.inc}
-file. The authors suggest using the \code{MESA SDK} available at
+optimization, debugging options, OpenMP usage for the transport), and
+the location of external library include and library files must be
+provided. \code{GR1D} is written in Fortran 90.  The compiler options
+must be set in the {\it make.inc} file. The authors suggest using the
+\code{MESA SDK} available at
 \url{http://www.astro.wisc.edu/~townsend/static.php?ref=mesasdk}.
 
 To activate support for finite-temperature EOS and neutrino leakage,
@@ -119,11 +120,16 @@ the path must be set in the \emph{make.inc} file.  Here is the
 \code{LAPACK} libraries are also available in the \code{MESA SDK}
 
 \subsection{Compiling \& Running}
-Once all the settings have been set, running {\emph{$>$make}} will compile
-the code.  If settings in {\emph{make.inc}} have changed, first run
-{\emph{$>$make clean}} then {\emph{$>$make}}.  To run \code{GR1D},
-simply enter the command {\emph{$>$./GR1D}}.
-
+Once all the settings have been set, running {\emph{$>$make}} will
+compile the code.  If settings in {\emph{make.inc}} have changed,
+first run {\emph{$>$make clean}} then {\emph{$>$make}}.  To run
+\code{GR1D}, simply enter the command {\emph{$>$./GR1D}}. One can use
+up to several cores to improve the wall time of \code{GR1D} when using
+the transport.  set the environment variable \code{OMP\_NUM\_THREADS}
+equal to 2,3,4 for varying levels of improvement.  As the calculation
+can only be parallelized so much, there is no value in choosing a
+large number of cores.
+ 
 \section{{\it.short} initial data format}
 \code{GR1D} uses the '.short' format for input stellar profiles. On
 the first line of the input file is the number of lines in the input
