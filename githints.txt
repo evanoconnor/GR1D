@@ -1,0 +1,14 @@
+useful git command, feel free to add more
+
+to checkout a particular branch
+
+> git checkout somebranch
+
+to make a new branch
+
+> git branch mynewbranch
+> git checkout mynewbranch
+
+to push a new branch back to fermi
+
+> git push origin mynewbranch
