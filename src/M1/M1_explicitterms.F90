@@ -388,10 +388,17 @@ subroutine M1_explicitterms(dts,implicit_factor)
               M1flux_diff(k,2) = (alpp(k)/Xp(k)**2*x1i(k+1)**2*M1flux_interface(k,2)- &
                    alpm(k)/Xm(k)**2*x1i(k)**2*M1flux_interface(k-1,2))/(dx*x1(k)**2)
            else
-              M1flux_diff(k,1) = (x1i(k+1)**2*M1flux_interface(k,1)- &
-                   x1i(k)**2*M1flux_interface(k-1,1))/(dx*x1(k)**2)
-              M1flux_diff(k,2) = (x1i(k+1)**2*M1flux_interface(k,2)- &
-                   x1i(k)**2*M1flux_interface(k-1,2))/(dx*x1(k)**2)
+              if (do_effectivepotential) then
+                 M1flux_diff(k,1) = (alpp(k)*x1i(k+1)**2*M1flux_interface(k,1)- &
+                      alpm(k)*x1i(k)**2*M1flux_interface(k-1,1))/(dx*x1(k)**2)
+                 M1flux_diff(k,2) = (alpp(k)*x1i(k+1)**2*M1flux_interface(k,2)- &
+                      alpm(k)*x1i(k)**2*M1flux_interface(k-1,2))/(dx*x1(k)**2)
+              else
+                 M1flux_diff(k,1) = (x1i(k+1)**2*M1flux_interface(k,1)- &
+                      x1i(k)**2*M1flux_interface(k-1,1))/(dx*x1(k)**2)
+                 M1flux_diff(k,2) = (x1i(k+1)**2*M1flux_interface(k,2)- &
+                      x1i(k)**2*M1flux_interface(k-1,2))/(dx*x1(k)**2)
+              endif
            endif
 
            flux_M1(k,i,j,1) = dts*implicit_factor*M1flux_diff(k,1)
