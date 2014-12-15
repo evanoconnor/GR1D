@@ -199,6 +199,7 @@ module GR1D_module
   ! #######################################################
   ! GR VARIABLES
   logical :: GR = .false.
+  logical :: do_effectivepotential = .false.
   real*8,allocatable,save :: phi(:),phii(:),alp(:),X(:),W(:), &
        alpp(:),alpm(:),Xp(:),Xm(:),Wp(:),Wm(:)
   real*8,allocatable,save :: dphidr(:),mgrav(:),mgravi(:)

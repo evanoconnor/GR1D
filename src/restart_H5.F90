@@ -417,7 +417,33 @@ subroutine restart_output_h5
         cerror = cerror + error
      endif
 
-  else
+  else 
+     if (do_effectivepotential) then
+        call h5screate_simple_f(rank, dims1, dspace_id, error)
+        call h5dcreate_f(file_id, "alp", H5T_NATIVE_DOUBLE, dspace_id,&
+             & dset_id, error)
+        call h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, alp, dims1, error)
+        call h5dclose_f(dset_id, error)
+        call h5sclose_f(dspace_id, error)
+        cerror = cerror + error
+        
+        call h5screate_simple_f(rank, dims1, dspace_id, error)
+        call h5dcreate_f(file_id, "alpp", H5T_NATIVE_DOUBLE, dspace_id,&
+             & dset_id, error)
+        call h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, alpp, dims1, error)
+        call h5dclose_f(dset_id, error)
+        call h5sclose_f(dspace_id, error)
+        cerror = cerror + error
+        
+        call h5screate_simple_f(rank, dims1, dspace_id, error)
+        call h5dcreate_f(file_id, "alpm", H5T_NATIVE_DOUBLE, dspace_id,&
+             & dset_id, error)
+        call h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, alpm, dims1, error)
+        call h5dclose_f(dset_id, error)
+        call h5sclose_f(dspace_id, error)
+        cerror = cerror + error
+     endif
+
      if (do_rotation) then
         call h5screate_simple_f(rank, dims1, dspace_id, error)
         call h5dcreate_f(file_id, "vphi1", H5T_NATIVE_DOUBLE, dspace_id,&
@@ -966,7 +992,24 @@ subroutine restart_init_h5
      endif
 
   else
-     if (do_rotation) then
+     if (do_effectivepotential) then
+        call h5dopen_f(file_id, "alp", dset_id, error)
+        call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, alp, dims1, error)
+        call h5dclose_f(dset_id,error)  
+        cerror = cerror + error
+        
+        call h5dopen_f(file_id, "alpp", dset_id, error)
+        call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, alpp, dims1, error)
+        call h5dclose_f(dset_id,error)  
+        cerror = cerror + error
+        
+        call h5dopen_f(file_id, "alpm", dset_id, error)
+        call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, alpm, dims1, error)
+        call h5dclose_f(dset_id,error)  
+        cerror = cerror + error
+     endif
+
+    if (do_rotation) then
         call h5dopen_f(file_id, "vphi1", dset_id, error)
         call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, vphi1, dims1, error)
         call h5dclose_f(dset_id,error) 

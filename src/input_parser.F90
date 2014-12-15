@@ -10,7 +10,10 @@ subroutine input_parser
   call get_string_parameter('jobname',jobname)
   call get_string_parameter('outdir',outdir)
   call get_logical_parameter('GR',GR)
-
+  if (.not.GR) then
+     call get_logical_parameter('do_effpot',do_effectivepotential)
+  endif
+  
   call get_string_parameter('initial_data',initial_data)
   if (initial_data.eq.'Shocktube') then
      call get_integer_parameter('shocktube_problem',shocktube_problem)
