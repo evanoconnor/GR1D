@@ -36,11 +36,7 @@ subroutine M1_conservativeupdate(dts)
      !\sqrt{\gamma}E when determining the change in DYe we need to 
      dDye =  4.0d0*pi*dts*M1_matter_source(k,4)*oneX*(amu_cgs*mass_gf) ! \alp S^\alp u_\alp * X * 4*pi*dts
      dtau =  4.0d0*pi*dts*M1_matter_source(k,3) !-\alpha^2S^t * 4*pi*dts
-     if ((v_order.eq.0).and.(.not.GR)) then
-        dSr = 0.0d0
-     else
-        dSr = 4.0d0*pi*dts*M1_matter_source(k,2) ! -\alpha X S^r * 4*pi*dts
-     endif
+     dSr = 4.0d0*pi*dts*M1_matter_source(k,2) ! -\alpha X S^r * 4*pi*dts
 
      !careful when determining gain radius, we require 10 zones of heating
      if (dtau.gt.0.0d0.and.nogain) then
@@ -66,12 +62,6 @@ subroutine M1_conservativeupdate(dts)
 
      total_energy_absorped = total_energy_absorped + &
          dtau*volume(k)/energy_gf/(dts/time_gf)
-
-     if (.not.GR) then
-        dSr = dSr
-        dtau = dtau
-        dDye = dDye
-     endif
 
      q(k,2) = qold(k,2) + dSr
      q(k,3) = qold(k,3) + dtau

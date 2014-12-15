@@ -168,10 +168,17 @@ subroutine M1_implicitstep(dts,implicit_factor)
            X2 = X(k)**2
            oneX = X(k)
         else
-           invalp = 1.0d0
-           invalp2 = 1.0d0
-           alp2 = 1.0d0
-           onealp = 1.0d0
+           if (do_effectivepotential) then
+              invalp = 1.0d0/alp(k)
+              invalp2 = invalp*invalp
+              alp2 = alp(k)**2
+              onealp = alp(k)
+           else
+              invalp = 1.0d0
+              invalp2 = 1.0d0
+              alp2 = 1.0d0
+              onealp = 1.0d0
+           endif
            invX = 1.0d0
            invX2 = 1.0d0
            X2 = 1.0d0
@@ -307,7 +314,6 @@ subroutine M1_implicitstep(dts,implicit_factor)
         stillneedconvergence = .true.
         count = 0
         do while (stillneedconvergence)
-
            !reset calculated variables
            ies_sourceterms = 0.0d0
            epannihil_sourceterms = 0.0d0
@@ -742,7 +748,6 @@ subroutine M1_implicitstep(dts,implicit_factor)
            dNLenergyfluxtermsdx = 0.0d0           
            
            if (include_energycoupling_imp) then
-
               !Warning, not heavily tested, I work a lot with the
               !explicit version, this only gets used a bit near BH
               !formation
@@ -1006,13 +1011,35 @@ subroutine M1_implicitstep(dts,implicit_factor)
               inverse(j+number_groups,j) = -NL_jacobian(j+number_groups,j)/det
            enddo
 
-
-           do j=1,2*number_groups
-              do j_prime=1,2*number_groups
-                 new_NL_jacobian(j,j_prime) = sum(inverse(j,:)*NL_jacobian(:,j_prime))
+           new_NL_jacobian = 0.0d0
+           
+           if (include_Ielectron_imp.or.include_energycoupling_imp.or.include_epannihil_kernels) then
+              do j=1,2*number_groups
+                 do j_prime=1,2*number_groups
+                    new_NL_jacobian(j,j_prime) = sum(inverse(j,:)*NL_jacobian(:,j_prime))
+                 enddo
+                 new_RF(j) = sum(inverse(j,:)*RF(:))   
               enddo
-              new_RF(j) = sum(inverse(j,:)*RF(:))   
-           enddo
+           else
+              do j=1,number_groups
+                 new_NL_jacobian(j,j) = inverse(j,j)*NL_jacobian(j,j) + &
+                      inverse(j,j+number_groups)*NL_jacobian(j+number_groups,j)
+                 new_NL_jacobian(j,j+number_groups) = inverse(j,j)*NL_jacobian(j,j+number_groups) + &
+                      inverse(j,j+number_groups)*NL_jacobian(j+number_groups,j+number_groups)
+                 
+                 new_NL_jacobian(j+number_groups,j) = inverse(j+number_groups,j)*NL_jacobian(j,j) + &
+                      inverse(j+number_groups,j+number_groups)*NL_jacobian(j+number_groups,j)
+                 
+                 new_NL_jacobian(j+number_groups,j+number_groups) = &
+                      inverse(j+number_groups,j)*NL_jacobian(j,j+number_groups) + &
+                      inverse(j+number_groups,j+number_groups)*NL_jacobian(j+number_groups,j+number_groups)
+                 
+                 new_RF(j) = inverse(j,j)*RF(j)+inverse(j,j+number_groups)*RF(j+number_groups)
+                 new_RF(j+number_groups) = inverse(j+number_groups,j)*RF(j) + &
+                      inverse(j+number_groups,j+number_groups)*RF(j+number_groups)
+              enddo
+           endif
+
            old_jacobian = NL_jacobian
            old_RF = RF
            NL_jacobian = new_NL_jacobian
