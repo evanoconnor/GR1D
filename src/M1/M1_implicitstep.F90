@@ -1033,9 +1033,8 @@ subroutine M1_implicitstep(dts,implicit_factor)
 
                  new_NL_jacobian(j+number_groups,j) = inverse(j+number_groups,j)*NL_jacobian(j,j) + &
                       inverse(j+number_groups,j+number_groups)*NL_jacobian(j+number_groups,j)
-                 new_NL_jacobian(j+number_groups,j+number_groups) = &
-                      inverse(j+number_groups,j)*NL_jacobian(j,j+number_groups) + &
-                      inverse(j+number_groups,j+number_groups)*NL_jacobian(j+number_groups,j+number_groups)
+                 new_NL_jacobian(j+number_groups,j) = inverse(j+number_groups,j)*NL_jacobian(j,j) + &
+                      inverse(j+number_groups,j+number_groups)*NL_jacobian(j+number_groups,j)
                  
                  new_RF(j) = inverse(j,j)*RF(j)+inverse(j,j+number_groups)*RF(j+number_groups)
                  new_RF(j+number_groups) = inverse(j+number_groups,j)*RF(j) + &
