@@ -1007,12 +1007,39 @@ subroutine M1_implicitstep(dts,implicit_factor)
            enddo
 
 
-           do j=1,2*number_groups
-              do j_prime=1,2*number_groups
-                 new_NL_jacobian(j,j_prime) = sum(inverse(j,:)*NL_jacobian(:,j_prime))
+           new_NL_jacobian = 0.0d0
+
+           !if things are implicit beyond E and F coupling in the same
+           !group, then must use the full formalism, otherwise, do the
+           !simple way, this can make a big difference if number of
+           !groups is large
+           if (include_Ielectron_imp.or.include_energycoupling_imp.or.include_epannihil_kernels) then
+              do j=1,2*number_groups
+                 do j_prime=1,2*number_groups
+                    new_NL_jacobian(j,j_prime) = sum(inverse(j,:)*NL_jacobian(:,j_prime))
+                 enddo
+                 new_RF(j) = sum(inverse(j,:)*RF(:))
               enddo
-              new_RF(j) = sum(inverse(j,:)*RF(:))   
-           enddo
+           else
+              do j=1,number_groups
+                 new_NL_jacobian(j,j) = inverse(j,j)*NL_jacobian(j,j) + &
+                      inverse(j,j+number_groups)*NL_jacobian(j+number_groups,j)
+                 new_NL_jacobian(j,j+number_groups) = inverse(j,j)*NL_jacobian(j,j+number_groups) + &
+                      inverse(j,j+number_groups)*NL_jacobian(j+number_groups,j+number_groups)
+
+                 new_NL_jacobian(j+number_groups,j) = inverse(j+number_groups,j)*NL_jacobian(j,j) + &
+                      inverse(j+number_groups,j+number_groups)*NL_jacobian(j+number_groups,j)
+
+                 new_NL_jacobian(j+number_groups,j+number_groups) = &
+                      inverse(j+number_groups,j)*NL_jacobian(j,j+number_groups) + &
+                      inverse(j+number_groups,j+number_groups)*NL_jacobian(j+number_groups,j+number_groups)
+
+                 new_RF(j) = inverse(j,j)*RF(j)+inverse(j,j+number_groups)*RF(j+number_groups)
+                 new_RF(j+number_groups) = inverse(j+number_groups,j)*RF(j) + &
+                      inverse(j+number_groups,j+number_groups)*RF(j+number_groups)
+              enddo
+           endif
+
            old_jacobian = NL_jacobian
            old_RF = RF
            NL_jacobian = new_NL_jacobian

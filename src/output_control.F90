@@ -5,7 +5,9 @@ subroutine output_control
   implicit none
 
   real*8 t_pb, minalp
-  integer i
+  integer i,ig
+  character*1024 filename
+  logical temp_vs_mass
 
   ! switch back to normal output after this
   ! amount of time
@@ -56,11 +58,43 @@ subroutine output_control
                     bounce = .true.
                     t_bounce = time
                     write(*,"(A20,1P10E15.6)") "bounce! NUCEOS, entropy > 3 in inner core", t_bounce
+
+                    !find xi_{2.5}
+                    ig = 1
+                    do while(mass(ig) .le. 2.5d0 .and. ig.lt.n1)
+                       ig = ig+1
+                    enddo
+
                     open(unit=666,file=trim(adjustl(outdir))//"/tbounce.dat", &
                          status='unknown',form='formatted',position='rewind')
-                    write(666,"(E27.18)") t_bounce
+                    write(666,"(E27.18)") t_bounce,x1i(ig)/length_gf, mass(ig) / (x1i(ig)/length_gf/1.0d8), &
+                         mass(i),mass(ig)
                     close(666)
+
                     i = n1-ghosts1
+
+                    ! write mbary vs. radius profile for compactness parameter
+                    ! evaluation
+                    temp_vs_mass = vs_mass
+                    vs_mass = .false.
+                    filename = trim(adjustl(outdir))//"/mass_bary_at_bounce.xg"
+                    call output_single(mass/mass_gf,filename)
+
+                    vs_mass = .true.
+
+                    filename = trim(adjustl(outdir))//"/rho_at_bounce.xg"
+                    call output_single(rho/rho_gf,filename)
+                    filename = trim(adjustl(outdir))//"/v_at_bounce.xg"
+                    call output_single(v*clite,filename)
+                    filename = trim(adjustl(outdir))//"/temperature_at_bounce.xg"
+                    call output_single(temp,filename)
+                    filename = trim(adjustl(outdir))//"/entropy_at_bounce.xg"
+                    call output_single(entropy,filename)
+                    filename = trim(adjustl(outdir))//"/ye_at_bounce.xg"
+                    call output_single(ye,filename)
+
+                    vs_mass = temp_vs_mass
+
                  else
                     i = i+1
                  endif
