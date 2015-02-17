@@ -208,7 +208,7 @@ subroutine M1test
      include_epannihil_kernels = .false.
      include_Ielectron_exp = .false.
      include_Ielectron_imp = .false.
-     include_energycoupling_exp = .false.
+     include_energycoupling_exp = .true.
      v_order = -1
      include_energycoupling_imp = .false.
      number_species_to_evolve = 1
