@@ -124,6 +124,12 @@ subroutine input_parser
               call get_double_parameter('yeofrho_ye1',yeofrho_ye1)
               call get_double_parameter('yeofrho_ye2',yeofrho_ye2)
               call get_double_parameter('yeofrho_yec',yeofrho_yec)
+              call get_logical_parameter('do_highcorrection',do_highcorrection)
+              if (do_highcorrection) then
+                 call get_double_parameter('yeofrho_rhoH',yeofrho_logrhoH)
+                 yeofrho_logrhoH = log10(yeofrho_logrhoH)
+                 call get_double_parameter('yeofrho_yeH',yeofrho_yeH)
+              end if
            else
               call get_string_parameter('ye_profile_name',yeprofile_name)
            endif
