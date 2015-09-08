@@ -16,6 +16,9 @@ module ye_of_rho
   real*8,save :: yeofrho_ye1
   real*8,save :: yeofrho_ye2
   real*8,save :: yeofrho_yec
+  logical, save :: do_highcorrection
+  real*8,save :: yeofrho_logrhoH
+  real*8,save :: yeofrho_yeH
 
 contains
   subroutine adjust_ye
@@ -201,6 +204,7 @@ contains
     
     real*8 incomingrho,outgoingye
     real*8 logincomingrho
+    real*8 slope
     
     real*8 x,absx
 
@@ -210,13 +214,23 @@ contains
 
     logincomingrho = log10(incomingrho)
 
-    x = max(-1.0d0,min(1.0d0,(2.0d0*logincomingrho - yeofrho_logrho2 - yeofrho_logrho1) &
-         /(yeofrho_logrho2-yeofrho_logrho1)))
+    if (logincomingrho.gt.yeofrho_logrho2 .and. do_highcorrection) then
 
-    absx = abs(x)
+       slope = (yeofrho_yeH - yeofrho_ye2) / (yeofrho_logrhoH - yeofrho_logrho2)
+
+       outgoingye = yeofrho_ye2 + slope*(logincomingrho - yeofrho_logrho2)
+
+    else
+
+       x = max(-1.0d0,min(1.0d0,(2.0d0*logincomingrho - yeofrho_logrho2 - yeofrho_logrho1) &
+            /(yeofrho_logrho2-yeofrho_logrho1)))
+
+       absx = abs(x)
     
-    outgoingye = 0.5d0*(yeofrho_ye2+yeofrho_ye1) + x/2.0d0*(yeofrho_ye2-yeofrho_ye1) &
-         + yeofrho_yec*(1.0d0-absx+4.0d0*absx*(absx-0.5d0)*(absx-1.0d0))
+       outgoingye = 0.5d0*(yeofrho_ye2+yeofrho_ye1) + x/2.0d0*(yeofrho_ye2-yeofrho_ye1) &
+            + yeofrho_yec*(1.0d0-absx+4.0d0*absx*(absx-0.5d0)*(absx-1.0d0))
+
+    end if
 
   end subroutine fit_ye
 
