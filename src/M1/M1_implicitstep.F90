@@ -77,14 +77,15 @@ subroutine M1_implicitstep(dts,implicit_factor)
   integer :: info
 
   logical :: nothappenyet1,nothappenyet2,stillneedconvergence
-  logical :: problem_fixing,trouble_brewing
+  logical :: problem_fixing,trouble_brewing,changedtwice
   integer :: problem_zone
   integer :: myloc(1)
   real*8 :: maxRF
 
   problem_fixing = .false.
   problem_zone = 0
-  trouble_brewing = .true.
+  trouble_brewing = .false.
+  changedtwice = .false.
 
   press_nu = 0.0d0
   energy_nu = 0.0d0
@@ -1133,18 +1134,36 @@ subroutine M1_implicitstep(dts,implicit_factor)
                        nothappenyet2 = .false.
                     endif
 
+                    if (changedtwice) then
+                       stop "changed twice, must work unless explicit scattering is bad"
+                    endif
+
                     !cases, low energy, energy coupling is large
                     !because difference between neighbouring bins is
                     !large, you can end up sending too much flux up in
                     !energy then is in the bin (hence, why we are
                     !here) Solution, make energy coupling term implicit.
                     if (j.le.3) then
-                       sourceG(problem_zone,3) = q_M1_old(k,i,problem_zone,1) + &
-                            B_M1(k,i,j,1) + D_M1(k,i,j,1)
-                       sourceG(problem_zone,1) = sourceG(problem_zone,1) - &
-                         C_M1(k,i,problem_zone,1)/q_M1_old(k,i,problem_zone,1)
+
+                       !first time in here, try making energy coupling implcit
+                       if (.not.trouble_brewing) then
+                          sourceG(problem_zone,3) = q_M1_old(k,i,problem_zone,1) + &
+                               B_M1(k,i,j,1) + D_M1(k,i,j,1)
+                          sourceG(problem_zone,1) = sourceG(problem_zone,1) - &
+                               C_M1(k,i,problem_zone,1)/q_M1_old(k,i,problem_zone,1)
+                       endif
+                       
+                       !second time in here, make flux implicit
+                       if (trouble_brewing) then
+                          sourceG(problem_zone,3) = q_M1_old(k,i,problem_zone,1) + &
+                               D_M1(k,i,j,1)
+                          sourceG(problem_zone,1) = sourceG(problem_zone,1) - &
+                               B_M1(k,i,problem_zone,1)/q_M1_old(k,i,problem_zone,1)
+                          changedtwice = .true.
+                       endif
+
                        trouble_brewing = .true.
-                    else if (j.ge.number_groups-3) then
+                    else if (j.ge.number_groups-5) then
                        !sometimes the highest energy bin want to send
                        !out more energy flux than it has, fix that!
                        if (M1en_Exp_term(j).lt.0.0d0) then 
@@ -1215,6 +1234,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
         enddo
         problem_fixing = .false.
         trouble_brewing = .false.
+        changedtwice = .false.
         problem_zone = 0
 
         !set and check new neutrino variables.
