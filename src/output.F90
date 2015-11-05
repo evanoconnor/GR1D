@@ -96,6 +96,8 @@ subroutine output_all(modeflag)
      if (do_M1) then
         filename = trim(adjustl(outdir))//"/dyedt_hydro.xg"
         if (.not.small_output) call output_single(dyedt_hydro*time_gf,filename)
+        filename = trim(adjustl(outdir))//"/depsdt.xg"
+        if (.not.small_output) call output_single(depsdt,filename)
         filename = trim(adjustl(outdir))//"/ynu.xg"
         if (.not.small_output) call output_single(ynu,filename)
      endif
@@ -175,7 +177,12 @@ subroutine output_all(modeflag)
         filename = trim(adjustl(outdir))//"/v.xg"
         call output_single(v*clite,filename)
      endif
-     
+
+     if (do_effectivepotential) then
+        filename = trim(adjustl(outdir))//"/alpha.xg"
+        if (.not.small_output) call output_single(alp,filename)
+     endif
+
      if (do_M1) then
         luminosity_rad = 0.0d0
         enden_rad = 0.0d0
@@ -511,13 +518,14 @@ subroutine output_all(modeflag)
 
 
         scalars(1:nscalars0) = 0.0d0
-        nscalars = 3
+        nscalars = 4
         scalars(1) = total_net_heating/(luminosity(1)+luminosity(2))            
         scalars(2) = luminosity(1)+luminosity(2)
         scalars(3) = total_net_heating
+        scalars(4) = total_mass_gain
         filename = trim(adjustl(outdir))//"/M1_net_heating.dat"
         call output_many_scalars(scalars,nscalars0,nscalars,filename)
-
+        
         scalars(1:nscalars0) = 0.0d0
         nscalars = number_groups*number_species*2
         if (nscalars.gt.256) stop "increase scalar count"

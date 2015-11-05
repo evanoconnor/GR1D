@@ -649,17 +649,18 @@ subroutine poly_eos(rho,enr,prs,dpdrho,dpde,soundsqr,keytemp)
 
 ! Local 
 !
+  prs = polyK * rho**polygamma
+  soundsqr = polygamma*polyK*rho**(polygamma-1.d0)
+
+  dpdrho = polyK * rho**(polygamma - 1) * polygamma
+  dpde = 0.0d0
+
   if(keytemp.eq.1) then
 !	energy wanted
      enr=prs/rho/(polygamma-1.d0)
      soundsqr=polygamma*prs/rho
   endif
 
-  prs = polyK * rho**polygamma
-  soundsqr = polygamma*polyK*rho**(polygamma-1.d0)
-
-  dpdrho = polyK * rho**(polygamma - 1) * polygamma
-  dpde = 0.0d0
 
 end subroutine poly_eos
 

@@ -170,6 +170,7 @@ module GR1D_module
   real*8 :: total_energy_radiated
   real*8 :: total_energy_absorped
   real*8 :: total_net_heating
+  real*8 :: total_mass_gain
 
   !M1 controls
   integer :: M1_do_backwardfix
@@ -238,6 +239,7 @@ module GR1D_module
   ! ye 
   real*8,allocatable,save :: ye(:),yem(:),yep(:),ye_prev(:)
   real*8,allocatable,save :: dyedt_hydro(:),dyedt_neutrino(:)
+  real*8,allocatable,save :: depsdt(:),dyedt(:)
   real*8,allocatable,save :: ynu(:)
   !chemical potential
   real*8,allocatable,save :: nuchem(:),elechem(:)

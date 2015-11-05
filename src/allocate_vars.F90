@@ -68,6 +68,7 @@ subroutine allocate_vars
 
   allocate(ye(n1),ye_prev(n1))
   allocate(dyedt_hydro(n1),dyedt_neutrino(n1))
+  allocate(depsdt(n1),dyedt(n1))
   allocate(yep(n1))
   allocate(yem(n1))
   allocate(ynu(n1))
