@@ -47,7 +47,7 @@ subroutine M1_explicitterms(dts,implicit_factor)
   real*8 :: energy_interface_distroj(number_groups)
   real*8 :: energy_interface_M1en(number_groups)
   real*8 :: M1flux_energy_interface(number_groups,2)
-  real*8 :: em,ep,de
+  real*8 :: em,ep,de,enext
   real*8 :: M1flux_diff_energy(number_groups,2)
   real*8 :: M1_moment_to_distro_nobinwidth(number_groups) 
   real*8 :: M1_moment_to_distro_top_nobinwidth(number_groups) 
@@ -454,7 +454,7 @@ subroutine M1_explicitterms(dts,implicit_factor)
      !$OMP velocity_coeffs,i,M1en_energy,M1en_energy_fluid,M1flux_energy,M1eddy_energy, &
      !$OMP M1pff_energy,M1qrrr_energy,M1qffr_energy,j,littlefactors,velocity,M1flux_energy_interface, &
      !$OMP logdistro,loginterface_distroj,interface_distroj,xi,temp_term,FL,FR,ep,M1flux_diff_energy, &
-     !$OMP em,de)
+     !$OMP em,de,enext)
      do k=ghosts1+1,M1_imaxradii
         if (GR) then
            if (k.eq.ghosts1+1) then
@@ -670,9 +670,15 @@ subroutine M1_explicitterms(dts,implicit_factor)
            
            M1flux_energy_interface(1,1) = M1flux_energy_interface(1,1) + FL(1,1)/nulibtable_etop(1)
            M1flux_energy_interface(1,2) = M1flux_energy_interface(1,2) + FL(1,2)/nulibtable_etop(1)
+           enext = nulibtable_energies(number_groups)**2/nulibtable_energies(number_groups-1)
            do j=2,number_groups
-              temp_term = (nulibtable_etop(j)-nulibtable_ebottom(j))/ &
-                   (1.0d0-nulibtable_energies(j)/nulibtable_energies(j+1))*xi(j)
+              if (j.eq.number_groups) then
+                 temp_term = (nulibtable_etop(j)-nulibtable_ebottom(j))/ &
+                      (1.0d0-nulibtable_energies(j)/enext)*xi(j)
+              else
+                 temp_term = (nulibtable_etop(j)-nulibtable_ebottom(j))/ &
+                      (1.0d0-nulibtable_energies(j)/nulibtable_energies(j+1))*xi(j)
+              endif
               FL(j,1) = velocity(j,1)*temp_term
               FL(j,2) = velocity(j,2)*temp_term
 
