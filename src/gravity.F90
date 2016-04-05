@@ -18,9 +18,9 @@ subroutine gravity
   else
     gravsource(1:n1,1) = 0.0d0
     gravsource(1:n1,2) = sqrt_gamma(1:n1)* &
-       (-rho(1:n1))*mass(1:n1)/(x1(1:n1))**2  ! Force
+         (-rho(1:n1))*dphidr(1:n1)  ! Force
     gravsource(1:n1,3) = sqrt_gamma(1:n1)* &
-       (- rho(1:n1))*v1(1:n1)*mass(1:n1)/x1(1:n1)**2 	
+         (- rho(1:n1))*v1(1:n1)*dphidr(1:n1)
     gravsource(1:n1,4) = 0.0d0
   endif
 

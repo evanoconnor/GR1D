@@ -24,6 +24,8 @@ subroutine problem
   else if (eoskey.eq.2) then
      polyK = 1.2435d15 * (0.5d0**(4.d0/3.d0))
      polygamma = 5.0d0/3.0d0
+     !polyK = 1.455e5 !for PNS migration test
+     !polygamma = 2.0d0 !for PNS migration test
   else if (eoskey.eq.4) then
      idealgamma = 1.4d0
      idealK1 =  1.2435d15 * (0.5d0**(4.d0/3.d0))

@@ -161,8 +161,13 @@ subroutine M1_explicitterms(dts,implicit_factor)
               l_min_thin(1) = -Xm(k+1)*alpm(k+1)
               l_max_thin(1) = Xm(k+1)*alpm(k+1)
            else
-              l_min_thin(1) = -1.0d0
-              l_max_thin(1) = 1.0d0
+              if (do_effectivepotential) then
+                 l_min_thin(1) = -alpm(k+1)
+                 l_max_thin(1) = alpm(k+1)
+              else
+                 l_min_thin(1) = -1.0d0
+                 l_max_thin(1) = 1.0d0
+              endif
            endif
            
            !thick limit:
@@ -174,8 +179,13 @@ subroutine M1_explicitterms(dts,implicit_factor)
                  l_min_thick(1) = min((2.0d0*Wm(k+1)**2*p - sqrtdiscrim)/(2.0d0*Wm(k+1)**2+1.0d0),p)
                  l_max_thick(1) = max((2.0d0*Wm(k+1)**2*p + sqrtdiscrim)/(2.0d0*Wm(k+1)**2+1.0d0),p)
               else
-                 p = v1m(k+1)
-                 discrim = (2.0d0*oneWm**2+1.0d0)-2.0d0*oneWm**2*p*p
+                 if (do_effectivepotential) then
+                    p = alpm(k+1)*v1m(k+1)
+                    discrim = alpm(k+1)**2*(2.0d0*oneWm**2+1.0d0)-2.0d0*oneWm**2*p*p
+                 else
+                    p = v1m(k+1)
+                    discrim = (2.0d0*oneWm**2+1.0d0)-2.0d0*oneWm**2*p*p
+                 endif
                  sqrtdiscrim = sqrt(discrim)
                  l_min_thick(1) = min((2.0d0*oneWm**2*p - sqrtdiscrim)/(2.0d0*oneWm**2+1.0d0),p)
                  l_max_thick(1) = max((2.0d0*oneWm**2*p + sqrtdiscrim)/(2.0d0*oneWm**2+1.0d0),p)
@@ -187,7 +197,11 @@ subroutine M1_explicitterms(dts,implicit_factor)
               if (GR) then
                  discrim = alpm(k+1)**2*Xm(k+1)**2*3.0d0
               else
-                 discrim = 3.0d0
+                 if (do_effectivepotential) then
+                    discrim = alpm(k+1)**2*3.0d0
+                 else
+                    discrim = 3.0d0
+                 endif
               endif
               sqrtdiscrim = sqrt(discrim)
               l_min_thick(1) = -sqrtdiscrim/3.0d0
@@ -209,8 +223,13 @@ subroutine M1_explicitterms(dts,implicit_factor)
               l_min_thin(2) = -Xp(k)*alpp(k)
               l_max_thin(2) = Xp(k)*alpp(k)
            else
-              l_min_thin(2) = -1.0d0
-              l_max_thin(2) = 1.0d0
+              if (do_effectivepotential) then
+                 l_min_thin(2) = -alpp(k)
+                 l_max_thin(2) = alpp(k)
+              else
+                 l_min_thin(2) = -1.0d0
+                 l_max_thin(2) = 1.0d0
+              endif
            endif
               
            
@@ -223,8 +242,13 @@ subroutine M1_explicitterms(dts,implicit_factor)
                  l_min_thick(2) = min((2.0d0*Wp(k)**2*p - sqrtdiscrim)/(2.0d0*Wp(k)**2+1.0d0),p)
                  l_max_thick(2) = max((2.0d0*Wp(k)**2*p + sqrtdiscrim)/(2.0d0*Wp(k)**2+1.0d0),p)
               else
-                 p = v1p(k)
-                 discrim = (2.0d0*Wp(k)**2+1.0d0)-2.0d0*Wp(k)**2*p*p
+                 if (do_effectivepotential) then
+                    p = alpp(k)*v1p(k)
+                    discrim = alpp(k)**2*(2.0d0*oneWp**2+1.0d0)-2.0d0*oneWp**2*p*p
+                 else
+                    p = v1p(k)
+                    discrim = (2.0d0*oneWp**2+1.0d0)-2.0d0*oneWp**2*p*p
+                 endif
                  sqrtdiscrim = sqrt(discrim)
                  l_min_thick(2) = min((2.0d0*oneWp**2*p - sqrtdiscrim)/(2.0d0*oneWp**2+1.0d0),p)
                  l_max_thick(2) = max((2.0d0*oneWp**2*p + sqrtdiscrim)/(2.0d0*oneWp**2+1.0d0),p)
@@ -235,7 +259,11 @@ subroutine M1_explicitterms(dts,implicit_factor)
               if (GR) then
                  discrim = alpp(k)**2*Xp(k)**2*3.0d0
               else
-                 discrim = 3.0d0
+                 if (do_effectivepotential) then
+                    discrim = alpp(k)**2*3.0d0
+                 else
+                    discrim = 3.0d0
+                 endif
               endif
 
               sqrtdiscrim = sqrt(discrim)
@@ -254,7 +282,7 @@ subroutine M1_explicitterms(dts,implicit_factor)
 
            !check for NaNs
            if (l_min(1).ne.l_min(1)) then
-              write(*,*) "NaNs in speeds 1"
+              write(*,*) "NaNs in speeds 1",M1chi_space_minus(k+1),l_min_thin(1),l_min_thick(1),k,i,j
               stop
            else if(l_min(2).ne.l_min(2)) then
               write(*,*) "NaNs in speeds 2"
@@ -301,10 +329,12 @@ subroutine M1_explicitterms(dts,implicit_factor)
                  endif
                  
               else
-                 Jkplus1 = (1.0d0/(1.0d0-v1(k+1)**2))*(M1en_space(k+1)*(1.0d0+v1(k+1)**2* &
-                      M1eddy_space(k+1))-2.0d0*M1flux_space(k+1)*v1(k+1))
+
                  Jk = (1.0d0/(1.0d0-v1(k)**2))*(M1en_space(k)*(1.0d0+v1(k)**2* &
                       M1eddy_space(k))-2.0d0*M1flux_space(k)*v1(k))
+                 Jkplus1 = (1.0d0/(1.0d0-v1(k+1)**2))*(M1en_space(k+1)*(1.0d0+v1(k+1)**2* &
+                      M1eddy_space(k+1))-2.0d0*M1flux_space(k+1)*v1(k+1))
+
               
                  if (a_asym.eq.1.0d0) then
                     diffusive_flux = 0.0d0
@@ -388,10 +418,17 @@ subroutine M1_explicitterms(dts,implicit_factor)
               M1flux_diff(k,2) = (alpp(k)/Xp(k)**2*x1i(k+1)**2*M1flux_interface(k,2)- &
                    alpm(k)/Xm(k)**2*x1i(k)**2*M1flux_interface(k-1,2))/(dx*x1(k)**2)
            else
-              M1flux_diff(k,1) = (x1i(k+1)**2*M1flux_interface(k,1)- &
-                   x1i(k)**2*M1flux_interface(k-1,1))/(dx*x1(k)**2)
-              M1flux_diff(k,2) = (x1i(k+1)**2*M1flux_interface(k,2)- &
-                   x1i(k)**2*M1flux_interface(k-1,2))/(dx*x1(k)**2)
+              if (do_effectivepotential) then
+                 M1flux_diff(k,1) = (alpp(k)*x1i(k+1)**2*M1flux_interface(k,1)- &
+                      alpm(k)*x1i(k)**2*M1flux_interface(k-1,1))/(dx*x1(k)**2)
+                 M1flux_diff(k,2) = (alpp(k)*x1i(k+1)**2*M1flux_interface(k,2)- &
+                      alpm(k)*x1i(k)**2*M1flux_interface(k-1,2))/(dx*x1(k)**2)
+              else
+                 M1flux_diff(k,1) = (x1i(k+1)**2*M1flux_interface(k,1)- &
+                      x1i(k)**2*M1flux_interface(k-1,1))/(dx*x1(k)**2)
+                 M1flux_diff(k,2) = (x1i(k+1)**2*M1flux_interface(k,2)- &
+                      x1i(k)**2*M1flux_interface(k-1,2))/(dx*x1(k)**2)
+              endif
            endif
 
            flux_M1(k,i,j,1) = dts*implicit_factor*M1flux_diff(k,1)
@@ -543,14 +580,28 @@ subroutine M1_explicitterms(dts,implicit_factor)
                 Xuprr(:)*X(k)**2*dWdr - Xuprr(:)*X(k)**4/alp(k)*dWvuprdt - &
                 heatterm_NL(:)/X(k)**2*dWvuprdr)
         else
-           velocity_coeffs(:,1) = (oneW*(-2.0d0*Xupff(:)*onev*x1(k)) + &
-                Z(:)/alp(k)*dWdt + Yupr(:)*dWdr - &
-                Yupr(:)*dWvuprdt - Xuprr(:)*dWvuprdr)
+           if (do_effectivepotential) then
+              velocity_coeffs(:,1) = alp(k)*(oneW*(-2.0d0*Xupff(:)*onev*x1(k)) + &
+                   Z(:)/alp(k)*dWdt + Yupr(:)*dWdr - &
+                   Yupr(:)*dWvuprdt/alp(k) - Xuprr(:)*dWvuprdr)
+              velocity_coeffs(2,1) = velocity_coeffs(2,1) - alp(k)*dphidr(k)
+              
+              !flux
+              velocity_coeffs(:,2) = alp(k)*(oneW*(-2.0d0*heattermff_NL(:)/x1(k)**2*onev*x1(k)) + &
+                   Yupr(:)*dWdt/alp(k) + Xuprr(:)*dWdr - Xuprr(:)*dWvuprdt/alp(k) - &
+                   heatterm_NL(:)*dWvuprdr)
+              velocity_coeffs(3,2) = velocity_coeffs(3,2) - alp(k)*dphidr(k)
 
-           !flux
-           velocity_coeffs(:,2) = (oneW*(-2.0d0*heattermff_NL(:)/x1(k)**2*onev*x1(k)) + &
-                Yupr(:)*dWdt + Xuprr(:)*dWdr - Xuprr(:)*dWvuprdt - &
-                heatterm_NL(:)*dWvuprdr)
+           else
+              velocity_coeffs(:,1) = (oneW*(-2.0d0*Xupff(:)*onev*x1(k)) + &
+                   Z(:)/alp(k)*dWdt + Yupr(:)*dWdr - &
+                   Yupr(:)*dWvuprdt - Xuprr(:)*dWvuprdr)
+              
+              !flux
+              velocity_coeffs(:,2) = (oneW*(-2.0d0*heattermff_NL(:)/x1(k)**2*onev*x1(k)) + &
+                   Yupr(:)*dWdt + Xuprr(:)*dWdr - Xuprr(:)*dWvuprdt - &
+                   heatterm_NL(:)*dWvuprdr)
+           endif
         endif
 
         do i=1,number_species_to_evolve
@@ -721,14 +772,23 @@ subroutine M1_explicitterms(dts,implicit_factor)
               X2 = X(k)**2
               oneX = X(k)
            else
-              invalp = 1.0d0
-              invalp2 = 1.0d0
-              alp2 = 1.0d0
-              onealp = 1.0d0
+              if (do_effectivepotential) then
+                 invalp = 1.0d0/alp(k)
+                 invalp2 = invalp**2
+                 alp2 = alp(k)**2
+                 onealp = alp(k)
+              else
+                 invalp = 1.0d0
+                 invalp2 = 1.0d0
+                 alp2 = 1.0d0
+                 onealp = 1.0d0
+              endif
+
               invX = 1.0d0
               invX2 = 1.0d0
               X2 = 1.0d0
               oneX = 1.0d0
+
            endif
 
            if (v_order.eq.-1) then

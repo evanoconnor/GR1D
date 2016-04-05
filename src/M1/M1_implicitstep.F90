@@ -77,14 +77,15 @@ subroutine M1_implicitstep(dts,implicit_factor)
   integer :: info
 
   logical :: nothappenyet1,nothappenyet2,stillneedconvergence
-  logical :: problem_fixing,trouble_brewing
+  logical :: problem_fixing,trouble_brewing,changedtwice
   integer :: problem_zone
   integer :: myloc(1)
   real*8 :: maxRF
 
   problem_fixing = .false.
   problem_zone = 0
-  trouble_brewing = .true.
+  trouble_brewing = .false.
+  changedtwice = .false.
 
   press_nu = 0.0d0
   energy_nu = 0.0d0
@@ -168,10 +169,17 @@ subroutine M1_implicitstep(dts,implicit_factor)
            X2 = X(k)**2
            oneX = X(k)
         else
-           invalp = 1.0d0
-           invalp2 = 1.0d0
-           alp2 = 1.0d0
-           onealp = 1.0d0
+           if (do_effectivepotential) then
+              invalp = 1.0d0/alp(k)
+              invalp2 = invalp*invalp
+              alp2 = alp(k)**2
+              onealp = alp(k)
+           else
+              invalp = 1.0d0
+              invalp2 = 1.0d0
+              alp2 = 1.0d0
+              onealp = 1.0d0
+           endif
            invX = 1.0d0
            invX2 = 1.0d0
            X2 = 1.0d0
@@ -258,7 +266,11 @@ subroutine M1_implicitstep(dts,implicit_factor)
               sourceG(j,2) = implicit_factor*dts*onealp*W2* &
                    4.0d0*pi*x1(k)*rho(k)*h*(1.0d0+v2)
            else
-              sourceG(j,2) = 0.0d0
+              if (do_effectivepotential) then
+                 sourceG(j,2) =  implicit_factor*dts*onealp*dphidr(k)
+              else
+                 sourceG(j,2) = 0.0d0
+              endif
            endif
 
            !these are terms from  the RHS of the flux equation
@@ -297,8 +309,13 @@ subroutine M1_implicitstep(dts,implicit_factor)
                    (press(k)+rho(k)*h*W2*v2)) - &
                    (eddyff(j)+eddytt(j))*invr)
            else
-              sourceG(j+number_groups,1) = implicit_factor*dts*onealp*( -&
-                   (eddyff(j)+eddytt(j))*invr)
+              if (do_effectivepotential) then
+                 sourceG(j+number_groups,1) = implicit_factor*dts*onealp*( -&
+                      (eddyff(j)+eddytt(j))*invr + dphidr(k))
+              else
+                 sourceG(j+number_groups,1) = implicit_factor*dts*onealp*( -&
+                      (eddyff(j)+eddytt(j))*invr)
+              endif
            endif
 
         enddo
@@ -307,7 +324,6 @@ subroutine M1_implicitstep(dts,implicit_factor)
         stillneedconvergence = .true.
         count = 0
         do while (stillneedconvergence)
-
            !reset calculated variables
            ies_sourceterms = 0.0d0
            epannihil_sourceterms = 0.0d0
@@ -742,7 +758,6 @@ subroutine M1_implicitstep(dts,implicit_factor)
            dNLenergyfluxtermsdx = 0.0d0           
            
            if (include_energycoupling_imp) then
-
               !Warning, not heavily tested, I work a lot with the
               !explicit version, this only gets used a bit near BH
               !formation
@@ -1006,13 +1021,12 @@ subroutine M1_implicitstep(dts,implicit_factor)
               inverse(j+number_groups,j) = -NL_jacobian(j+number_groups,j)/det
            enddo
 
-
-           new_NL_jacobian = 0.0d0
-
            !if things are implicit beyond E and F coupling in the same
            !group, then must use the full formalism, otherwise, do the
            !simple way, this can make a big difference if number of
            !groups is large
+           new_NL_jacobian = 0.0d0
+           
            if (include_Ielectron_imp.or.include_energycoupling_imp.or.include_epannihil_kernels) then
               do j=1,2*number_groups
                  do j_prime=1,2*number_groups
@@ -1029,7 +1043,6 @@ subroutine M1_implicitstep(dts,implicit_factor)
 
                  new_NL_jacobian(j+number_groups,j) = inverse(j+number_groups,j)*NL_jacobian(j,j) + &
                       inverse(j+number_groups,j+number_groups)*NL_jacobian(j+number_groups,j)
-
                  new_NL_jacobian(j+number_groups,j+number_groups) = &
                       inverse(j+number_groups,j)*NL_jacobian(j,j+number_groups) + &
                       inverse(j+number_groups,j+number_groups)*NL_jacobian(j+number_groups,j+number_groups)
@@ -1133,18 +1146,36 @@ subroutine M1_implicitstep(dts,implicit_factor)
                        nothappenyet2 = .false.
                     endif
 
+                    if (changedtwice) then
+                       stop "changed twice, must work unless explicit scattering is bad"
+                    endif
+
                     !cases, low energy, energy coupling is large
                     !because difference between neighbouring bins is
                     !large, you can end up sending too much flux up in
                     !energy then is in the bin (hence, why we are
                     !here) Solution, make energy coupling term implicit.
                     if (j.le.3) then
-                       sourceG(problem_zone,3) = q_M1_old(k,i,problem_zone,1) + &
-                            B_M1(k,i,j,1) + D_M1(k,i,j,1)
-                       sourceG(problem_zone,1) = sourceG(problem_zone,1) - &
-                         C_M1(k,i,problem_zone,1)/q_M1_old(k,i,problem_zone,1)
+
+                       !first time in here, try making energy coupling implcit
+                       if (.not.trouble_brewing) then
+                          sourceG(problem_zone,3) = q_M1_old(k,i,problem_zone,1) + &
+                               B_M1(k,i,j,1) + D_M1(k,i,j,1)
+                          sourceG(problem_zone,1) = sourceG(problem_zone,1) - &
+                               C_M1(k,i,problem_zone,1)/q_M1_old(k,i,problem_zone,1)
+                       endif
+                       
+                       !second time in here, make flux implicit
+                       if (trouble_brewing) then
+                          sourceG(problem_zone,3) = q_M1_old(k,i,problem_zone,1) + &
+                               D_M1(k,i,j,1)
+                          sourceG(problem_zone,1) = sourceG(problem_zone,1) - &
+                               B_M1(k,i,problem_zone,1)/q_M1_old(k,i,problem_zone,1)
+                          changedtwice = .true.
+                       endif
+
                        trouble_brewing = .true.
-                    else if (j.ge.number_groups-3) then
+                    else if (j.ge.number_groups-4) then
                        !sometimes the highest energy bin want to send
                        !out more energy flux than it has, fix that!
                        if (M1en_Exp_term(j).lt.0.0d0) then 
@@ -1215,6 +1246,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
         enddo
         problem_fixing = .false.
         trouble_brewing = .false.
+        changedtwice = .false.
         problem_zone = 0
 
         !set and check new neutrino variables.
