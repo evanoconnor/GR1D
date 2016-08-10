@@ -227,7 +227,7 @@ subroutine get_shock_radius
   endif
 
   ishock = minloc(v1( (ghosts1+1) : (n1-ghosts1-1) ))
-  shock_radius = x1(ishock(1))
+  shock_radius = x1(ishock(1)+ghosts1)
 
 end subroutine get_shock_radius
 
