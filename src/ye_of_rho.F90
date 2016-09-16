@@ -144,7 +144,7 @@ contains
           yeinlogrho(i) = yeinlogrho(i-1)
        endif
        do while ((j.lt.(plen+1)).and.proceed)
-          if (profilerho(j).gt.rhoinlogrho(i)) then
+          if (profilerho(j).ge.rhoinlogrho(i)) then
              proceed = .false.
              !set ye it interpolated value between next profile rho and last one
              if (j.eq.1) then
@@ -160,7 +160,7 @@ contains
           j=j+1
        enddo
        if (j.eq.(plen+1).and.proceed) then
-          write(*,*) "Error",i
+          write(*,*) "Error",i, rhoinlogrho(i), profilerho(plen)
           stop
        endif
     enddo
