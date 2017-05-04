@@ -17,9 +17,11 @@ subroutine M1_conservativeupdate(dts)
   logical nogain 
   integer keyerr,keytemp
   real*8 eosdummy(14)
+  logical ::  passfluxtest
 
   nogain = .true.
   total_net_heating = 0.0d0
+  total_mass_gain = 0.0d0
   igain(1) = ghosts1+1
   gain_radius = 0.0d0
   maxye = 0.0d0
@@ -36,42 +38,26 @@ subroutine M1_conservativeupdate(dts)
      !\sqrt{\gamma}E when determining the change in DYe we need to 
      dDye =  4.0d0*pi*dts*M1_matter_source(k,4)*oneX*(amu_cgs*mass_gf) ! \alp S^\alp u_\alp * X * 4*pi*dts
      dtau =  4.0d0*pi*dts*M1_matter_source(k,3) !-\alpha^2S^t * 4*pi*dts
-     if ((v_order.eq.0).and.(.not.GR)) then
-        dSr = 0.0d0
-     else
-        dSr = 4.0d0*pi*dts*M1_matter_source(k,2) ! -\alpha X S^r * 4*pi*dts
-     endif
+     dSr = 4.0d0*pi*dts*M1_matter_source(k,2) ! -\alpha X S^r * 4*pi*dts
 
-     !careful when determining gain radius, we require 10 zones of heating
-     if (dtau.gt.0.0d0.and.nogain) then
-        gaintracker = gaintracker+1
-        if (gaintracker.eq.10) then
-           igain(1) = k-9
-           gain_radius = x1(igain(1))
-           nogain = .false.
-        endif
-     else if (nogain) then 
-        gaintracker = 0
-        total_net_heating = 0.0d0
-     else
-        !have gain region, don't reset gaintracker
-     endif
+     depsdt(k) = M1_matter_source(k,3)/rho(k)*4.0d0*pi/eps_gf*time_gf
+     dyedt(k) = M1_matter_source(k,4)*4.0d0*pi*X(k)/q(k,1)*(amu_cgs*mass_gf)*time_gf
 
-     if (gaintracker.gt.0.or..not.nogain) then
-        if (dtau.gt.0.0d0) then
-           total_net_heating = total_net_heating + &
-                dtau*volume(k)/(energy_gf*dts/time_gf)
-        endif
+     passfluxtest = sum(abs(q_M1(k,1,:,2))/X(k))/sum(q_M1(k,1,:,1)).gt.0.5d0
+     passfluxtest = passfluxtest.and.(sum(abs(q_M1(k,2,:,2))/X(k))/sum(q_M1(k,2,:,1)).gt.0.5d0)
+
+     passfluxtest = rho(k)/rho_gf.lt.3.0d10
+
+     if ((dtau.gt.0.0d0).and.(entropy(k).gt.6.0d0).and.passfluxtest) then
+        total_net_heating = total_net_heating + &
+             dtau*X(k)*volume(k)/(energy_gf*dts/time_gf)
+        total_mass_gain = total_mass_gain + &
+             volume(k)*rho(k)
+
      endif
 
      total_energy_absorped = total_energy_absorped + &
          dtau*volume(k)/energy_gf/(dts/time_gf)
-
-     if (.not.GR) then
-        dSr = dSr
-        dtau = dtau
-        dDye = dDye
-     endif
 
      q(k,2) = qold(k,2) + dSr
      q(k,3) = qold(k,3) + dtau

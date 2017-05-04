@@ -26,6 +26,11 @@ subroutine boundaries(innerflag,outerflag)
      gi=ghosts1
      do i=ghosts1,1,-1
         gi=gi+1
+        if (do_effectivepotential) then
+           alp(i) = alp(gi)
+           alpp(i) = alpm(gi)
+           alpm(i) = alpp(gi)
+        endif
         rho(i) = rho(gi)
         rhop(i) = rhom(gi)
         rhom(i) = rhop(gi)
@@ -103,6 +108,13 @@ subroutine boundaries(innerflag,outerflag)
      rho(i) = rho(gi)
      rhop(i) = rho(gi)
      rhom(i) = rho(gi)
+     if (do_effectivepotential) then
+        alpp(gi) = alp(gi)
+        alp(i) = alp(gi)
+        alpp(i) = alp(gi)
+        alpm(i) = alp(gi)
+     endif
+
      if(initial_data.eq."OSC") then
         rho(i) = 1.0d0*rho_gf
         rhom(i) = 1.0d0*rho_gf
