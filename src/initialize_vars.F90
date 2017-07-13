@@ -41,7 +41,9 @@ subroutine initialize_vars
   M1_do_backwardfix = 0
   v_order = -1
   M1_maxradii = 0.0d0
+  M1_extractradii = 0.0d0
   M1_imaxradii = 0
+  M1_iextractradii = 0
   number_species = 0
   number_species = -1
   number_species_to_evolve = -1

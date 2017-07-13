@@ -154,7 +154,9 @@ module GR1D_module
 
   integer :: v_order
   real*8 :: M1_maxradii
+  real*8 :: M1_extractradii
   integer :: M1_imaxradii
+  integer :: M1_iextractradii
   integer :: number_species
   integer :: number_species_to_evolve
   integer :: number_groups
