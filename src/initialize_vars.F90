@@ -68,6 +68,7 @@ subroutine initialize_vars
   mbary12 = 0.0d0
   rXmax = 0.0d0
   r12max = 0.0d0
+  r11max = 0.0d0
   mass_inner_core = 0.0d0
   heat_fac = 0.0d0
 
