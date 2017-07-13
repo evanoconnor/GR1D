@@ -421,19 +421,19 @@ subroutine output_all(modeflag)
         average_energy_fluid = 0.0d0
         rms_energy_fluid = 0.0d0
 
-        do k=1,number_species
-           luminosity(k)     = sum(q_M1(M1_imaxradii,k,:,2))&
-                * (4.0d0*pi)**2*x1(M1_imaxradii)**2 * (clite**5/ggrav)
-           luminosity_fluid(k) = sum(q_M1_fluid(M1_imaxradii,k,:,2))&
-                * (4.0d0*pi)**2*x1(M1_imaxradii)**2 * (clite**5/ggrav)
-           num_luminosity_fluid(k) = sum(q_M1_fluid(M1_imaxradii,k,:,2)/nulibtable_energies(:))&
-                * (4.0d0*pi)**2*x1(M1_imaxradii)**2 * (clite**3/ggrav*mass_gf)
-           average_energy_fluid(k) = sum(q_M1_fluid(M1_imaxradii,k,:,2))&
-                / sum(q_M1_fluid(M1_imaxradii,k,:,2)/nulibtable_energies(:)) / (mev_to_erg*energy_gf)
-           rms_energy_fluid(k)     = sqrt( sum(q_M1_fluid(M1_imaxradii,k,:,2)*nulibtable_energies(:))&
-                / sum(q_M1_fluid(M1_imaxradii,k,:,2)/nulibtable_energies(:)) ) / (mev_to_erg*energy_gf)
-           average_energy(k) = average_energy_fluid(k)/sqrt(1.0d0-v(M1_imaxradii)**2)*(1.0d0+v(M1_imaxradii))
-           rms_energy(k)     = rms_energy_fluid(k)/sqrt(1.0d0-v(M1_imaxradii)**2)*(1.0d0+v(M1_imaxradii))
+         do k=1,number_species
+           luminosity(k)     = sum(q_M1(M1_iextractradii,k,:,2))&
+                * (4.0d0*pi)**2*x1(M1_iextractradii)**2 * (clite**5/ggrav)
+           luminosity_fluid(k) = sum(q_M1_fluid(M1_iextractradii,k,:,2))&
+                * (4.0d0*pi)**2*x1(M1_iextractradii)**2 * (clite**5/ggrav)
+           num_luminosity_fluid(k) = sum(q_M1_fluid(M1_iextractradii,k,:,2)/nulibtable_energies(:))&
+                * (4.0d0*pi)**2*x1(M1_iextractradii)**2 * (clite**3/ggrav*mass_gf)
+           average_energy_fluid(k) = sum(q_M1_fluid(M1_iextractradii,k,:,2))&
+                / sum(q_M1_fluid(M1_iextractradii,k,:,2)/nulibtable_energies(:)) / (mev_to_erg*energy_gf)
+           rms_energy_fluid(k)     = sqrt( sum(q_M1_fluid(M1_iextractradii,k,:,2)*nulibtable_energies(:))&
+                / sum(q_M1_fluid(M1_iextractradii,k,:,2)/nulibtable_energies(:)) ) / (mev_to_erg*energy_gf)
+           average_energy(k) = average_energy_fluid(k)/sqrt(1.0d0-v(M1_iextractradii)**2)*(1.0d0+v(M1_iextractradii))
+           rms_energy(k)     = rms_energy_fluid(k)/sqrt(1.0d0-v(M1_iextractradii)**2)*(1.0d0+v(M1_iextractradii))
            num_luminosity(k) = luminosity(k)/(average_energy(k)*mev_to_erg)
         enddo
 
@@ -587,27 +587,27 @@ subroutine output_all(modeflag)
         call output_many_scalars(scalars,nscalars0,nscalars,filename)
 
         filename = trim(adjustl(outdir))//"/M1_nue_fluxspectra_out.xg"
-        spectrum = q_M1(M1_imaxradii,1,:,2)*M1_moment_to_distro(:)
+        spectrum = q_M1(M1_iextractradii,1,:,2)*M1_moment_to_distro(:)
         call output_spectra(spectrum,filename)
 
         filename = trim(adjustl(outdir))//"/M1_anue_fluxspectra_out.xg"
-        spectrum = q_M1(M1_imaxradii,2,:,2)*M1_moment_to_distro(:)
+        spectrum = q_M1(M1_iextractradii,2,:,2)*M1_moment_to_distro(:)
         call output_spectra(spectrum,filename)
 
         filename = trim(adjustl(outdir))//"/M1_nux_fluxspectra_out.xg"
-        spectrum = q_M1(M1_imaxradii,3,:,2)*M1_moment_to_distro(:)
+        spectrum = q_M1(M1_iextractradii,3,:,2)*M1_moment_to_distro(:)
         call output_spectra(spectrum,filename)
 
         filename = trim(adjustl(outdir))//"/M1_nue_enspectra_out.xg"
-        spectrum = q_M1_fluid(M1_imaxradii,1,:,1)*M1_moment_to_distro(:)
+        spectrum = q_M1_fluid(M1_iextractradii,1,:,1)*M1_moment_to_distro(:)
         call output_spectra(spectrum,filename)
 
         filename = trim(adjustl(outdir))//"/M1_anue_enspectra_out.xg"
-        spectrum = q_M1_fluid(M1_imaxradii,2,:,1)*M1_moment_to_distro(:)
+        spectrum = q_M1_fluid(M1_iextractradii,2,:,1)*M1_moment_to_distro(:)
         call output_spectra(spectrum,filename)
 
         filename = trim(adjustl(outdir))//"/M1_nux_enspectra_out.xg"
-        spectrum = q_M1_fluid(M1_imaxradii,3,:,1)*M1_moment_to_distro(:)
+        spectrum = q_M1_fluid(M1_iextractradii,3,:,1)*M1_moment_to_distro(:)
         call output_spectra(spectrum,filename)
 
         filename = trim(adjustl(outdir))//"/M1_nue_fluxspectra_cen.xg"
