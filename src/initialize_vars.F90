@@ -133,6 +133,7 @@ subroutine initialize_arrays
   epsm(:) = 0.0d0
 
   energy_nu(:) = 0.0d0
+  mom_nu(:) = 0.0d0
   
   eps_kin(:) = 0.0d0
   binding_energy(:) = 0.0d0

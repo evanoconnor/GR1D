@@ -43,7 +43,7 @@ subroutine mass_interior
   else
      if (do_effectivepotential) then
         mass(ghosts1+1) = 4.0d0*pi/3.0d0*x1(ghosts1+1)**3*(rho(ghosts1+1)* &
-             (1.0d0 + eps(ghosts1+1)) + energy_nu(ghosts1+1)*include_nus)
+             (1.0d0 + eps(ghosts1+1)) + (energy_nu(ghosts1+1)+mom_nu(ghosts1+1)*v1(ghosts1+1))*include_nus)
         mass(ghosts1+1) = mass(ghosts1+1)*sqrt(1.0d0-2.0d0*mass(ghosts1+1)/x1(ghosts1+1))
 
         dphidr(ghosts1+1) = (mass(ghosts1+1) + 4.0d0*pi*x1(ghosts1+1)**3* &
@@ -53,10 +53,10 @@ subroutine mass_interior
 
         do i=ghosts1+2,n1-1
            mass(i) = mass(i-1) + &
-                4.0d0/3.0d0*pi*(rho(i-1)*(1.0d0+eps(i-1))+energy_nu(i-1)*include_nus) &
+                4.0d0/3.0d0*pi*(rho(i-1)*(1.0d0+eps(i-1))+(energy_nu(i-1)+mom_nu(i-1)*v1(i-1))*include_nus) &
                 * ( x1i(i)**3 - x1(i-1)**3 )*sqrt(1.0d0-2.0d0*mass(i-1)/x1(i-1))
            mass(i) = mass(i) + &
-                4.0d0/3.0d0*pi*(rho(i)*(1.0d0+eps(i))+energy_nu(i)*include_nus) * &
+                4.0d0/3.0d0*pi*(rho(i)*(1.0d0+eps(i))+(energy_nu(i)+mom_nu(i)*v1(i))*include_nus) * &
                 (x1(i)**3 - x1i(i)**3)*sqrt(1.0d0-2.0d0*mass(i)/x1i(i))
            dphidr(i) = (mass(i) + 4.0d0*pi*x1(i)**3*(press(i)+press_nu(i)))/ &
                 (x1(i)**2*(1.0d0+v1(i)**2-2.0d0*mass(i)/x1(i)))* &
@@ -64,10 +64,10 @@ subroutine mass_interior
         enddo
      
         mass(n1) = mass(n1-1) + &
-             4.0d0/3.0d0*pi*(rho(n1-1)*(1.0d0+eps(n1-1))+energy_nu(n1-1)*include_nus)* &
+             4.0d0/3.0d0*pi*(rho(n1-1)*(1.0d0+eps(n1-1))+(energy_nu(n1-1)+mom_nu(n1-1)*v1(n1-1))*include_nus)* &
              (x1i(n1)**3 - x1(n1-1)**3)*sqrt(1.0d0-2.0d0*mass(n1-1)/x1(n1-1))
         mass(n1) = mass(n1) + &
-             4.0d0/3.0d0*pi*(rho(n1)*(1.0d0+eps(n1))+energy_nu(n1)*include_nus)* &
+             4.0d0/3.0d0*pi*(rho(n1)*(1.0d0+eps(n1))+(energy_nu(n1)+mom_nu(n1)*v1(n1))*include_nus)* &
              (x1(n1)**3 - x1i(n1)**3)*sqrt(1.0d0-2.0d0*mass(n1)/x1i(n1))         
         dphidr(n1) = (mass(n1) + 4.0d0*pi*x1(n1)**3*(press(n1)+press_nu(n1)))/ &
              (x1(n1)**2*(1.0d0+v1(n1)**2-2.0d0*mass(n1)/x1(n1)))* &
