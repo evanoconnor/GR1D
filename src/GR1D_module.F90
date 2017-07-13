@@ -93,6 +93,7 @@ module GR1D_module
   integer iorder_hydro
   character*80 hydro_formulation
   character*80 reconstruction_method
+  character*80 M1_reconstruction_method
 
   character*80 flux_type
 
