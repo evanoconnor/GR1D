@@ -58,7 +58,7 @@ subroutine findaccretionradii
         elseif (x1i(i).lt.250.0d5*length_gf) then
            accretion_radii(10) = i
            accreted_mass(10) = interiormass(i)
-        elseif (x1i(i).lt.300.0d5*length_gf) then
+        elseif (x1i(i).lt.500.0d5*length_gf) then
            accretion_radii(11) = i     
            accreted_mass(11) = interiormass(i)   
         endif
