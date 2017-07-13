@@ -497,6 +497,14 @@ subroutine restart_output_h5
   cerror = cerror + error
 
   call h5screate_simple_f(rank, dims1, dspace_id, error)
+  call h5dcreate_f(file_id, "entropy", H5T_NATIVE_DOUBLE, dspace_id,&
+       & dset_id, error)
+  call h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, entropy, dims1, error)
+  call h5dclose_f(dset_id, error)
+  call h5sclose_f(dspace_id, error)
+  cerror = cerror + error
+
+  call h5screate_simple_f(rank, dims1, dspace_id, error)
   call h5dcreate_f(file_id, "ye", H5T_NATIVE_DOUBLE, dspace_id,&
        & dset_id, error)
   call h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, ye, dims1, error)
