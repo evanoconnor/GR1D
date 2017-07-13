@@ -221,6 +221,7 @@ module GR1D_module
   ! specific internal energy, cell center and at interfaces
   real*8,allocatable,save :: eps(:),epsp(:),epsm(:)
   real*8,allocatable,save :: energy_nu(:)
+  real*8,allocatable,save :: mom_nu(:)
   ! mass interior cell center, mass of cell, volume of cell
   real*8,allocatable,save :: mass(:), mass1(:), volume(:)
   ! pressure 

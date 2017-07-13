@@ -89,6 +89,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
 
   press_nu = 0.0d0
   energy_nu = 0.0d0
+  mom_nu = 0.0d0
   ynu = 0.0d0
 
   nothappenyet1 = .true.
@@ -1338,6 +1339,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
 
            press_nu(k) = press_nu(k) + oneeddy*oneM1en*4.0d0*pi*invX2**2
            energy_nu(k) = energy_nu(k) + oneM1en*4.0d0*pi
+           mom_nu(k) = mom_nu(k) + oneM1flux*4.0d0*pi
            !$OMP END CRITICAL        
 
         enddo

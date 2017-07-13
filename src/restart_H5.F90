@@ -548,6 +548,15 @@ subroutine restart_output_h5
      call h5dclose_f(dset_id, error)
      call h5sclose_f(dspace_id, error)
      cerror = cerror + error
+
+     call h5screate_simple_f(rank, dims1, dspace_id, error)
+     call h5dcreate_f(file_id, "mom_nu", H5T_NATIVE_DOUBLE,&
+          & dspace_id, dset_id, error)
+     call h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, mom_nu, dims1,&
+          & error)
+     call h5dclose_f(dset_id, error)
+     call h5sclose_f(dspace_id, error)
+     cerror = cerror + error
       
      call h5screate_simple_f(rank, dims1, dspace_id, error)
      call h5dcreate_f(file_id, "dnupdr", H5T_NATIVE_DOUBLE, dspace_id&
@@ -1073,6 +1082,11 @@ subroutine restart_init_h5
      
      call h5dopen_f(file_id, "energy_nu", dset_id, error)
      call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, energy_nu, dims1, error)
+     call h5dclose_f(dset_id,error) 
+     cerror = cerror + error
+
+     call h5dopen_f(file_id, "mom_nu", dset_id, error)
+     call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, mom_nu, dims1, error)
      call h5dclose_f(dset_id,error) 
      cerror = cerror + error
 
