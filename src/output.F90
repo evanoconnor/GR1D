@@ -382,7 +382,7 @@ subroutine output_all(modeflag)
         
         filename = trim(adjustl(outdir))//"/mgrav_rho1e12.dat"
         call output_scalar(mgrav12,filename)      
-        
+
         filename = trim(adjustl(outdir))//"/mbary_Xmax.dat"
         call output_scalar(mbaryX,filename)      
         
@@ -394,6 +394,9 @@ subroutine output_all(modeflag)
         
         filename = trim(adjustl(outdir))//"/r_rho1e12.dat"
         call output_scalar(r12max/length_gf,filename)    
+
+        filename = trim(adjustl(outdir))//"/r_rho1e11.dat"
+        call output_scalar(r11max/length_gf,filename)    
         
         filename = trim(adjustl(outdir))//"/M_innercore.dat"
         call output_scalar(mass_inner_core,filename)

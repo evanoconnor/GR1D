@@ -132,7 +132,7 @@ module GR1D_module
   real*8 mgravX,mgrav12
   real*8 mbaryX,mbary12
   real*8 mass_inner_core
-  real*8 rXmax,r12max
+  real*8 rXmax,r12max,r11max
   real*8 heat_fac
 
   !rotation
