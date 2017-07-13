@@ -203,10 +203,6 @@ subroutine input_parser
         call get_integer_parameter('M1_phase1_ies_way',M1_phase1_ies_way)
         call get_integer_parameter('M1_phase1_encpl_way',M1_phase1_encpl_way)
 
-        if (M1_phase1_reconstruction.ne.reconstruction_method) then
-           write(*,*) "Initial M1 reconstruction method not the same as specified in main parameters"
-           stop
-        endif
         if ((M1_phase1_ies_way.eq.0).and.(include_Ielectron_exp.or.include_Ielectron_imp)) then
            write(*,*) "Initial M1 inelastic electron scattering method not the same as specified in main parameters"
            stop

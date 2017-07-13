@@ -24,6 +24,7 @@ subroutine initialize_vars
   ppm_origin_TVD = 0
       
   reconstruction_method = " "
+  M1_reconstruction_method = " "
   tvd_limiter = " "
   flux_type = " "
   fake_neutrinos = .false.
