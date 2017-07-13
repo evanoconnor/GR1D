@@ -1,0 +1,121 @@
+##### Job parameters #######
+jobname			=	"GR1Dv2 s15 transport run"
+GR			=	1		# 1 for GR, 0 for Newtonian
+outdir 			= 	"s15WW95"
+initial_data		=	"Collapse"	# "Sedov", "Shocktube", "OSC", "Collapse", "M1test"
+profile_name		=	"./profiles/s15s7b2.approx.short" # stellar profile
+WHW02profile		=	1		# 1 for WHW02/HW07/WW95 profile (adjust radius definition)
+profile_type		=	1		# 1: .short format
+gravity_active		=	1		# do we want gravity?
+ntmax			=	100000000	# maximum timestep
+tend			=	0.7d0		# maximum time
+
+
+####### Grid parameters #######
+geometry		=	2		# 1: planar, 2: spherical
+gridtype		=	"custom"		# "log", "unigrid", "custom", "custom2"
+### custom & custom2 input parameters ###
+grid_custom_rad1	=	20.0d5		# radial extent of custom grid (log outside)
+grid_custom_dx1		=	3.0d4		# smallest radial zone
+
+rmax_from_profile	=	1		# take rmax to be where rho=3.0d3g/cm^3
+rho_cut 		=	2.0d3		# density to cut profile at if rmax_from_profile = 1
+
+radial_zones		=	600		# number of radial zones
+ghosts1			=	4		# number of ghost cells
+
+
+####### Hydro Parameters #######
+do_hydro		=	1		# 1 for hydro on
+iorder_hydro		=	2		# RK order for hydro 
+cffac			=	0.5d0		# CFL factor
+reconstruction_method	=	"ppm"		# "tvd", "pc","ppm"
+ppm_origin_TVD		=	5		
+tvd_limiter		=	"MC"		# MC, minmod,
+flux_type		= 	"HLLE"		# HLLE
+
+####### EOS parameters #######
+eoskey			=	3		# hybrid: 1
+						# poly: 2
+						# hot nuclear: 3
+						# ideal: 4
+eos_table_name 		= 	"LS180_234r_136t_50y_analmu_20091212_SVNr26.h5"
+hybridgamma_th		=	1.30d0		# hybrid gamma_th
+hybridgamma1		=	1.31d0		# hybrid gamma_th
+hybridgamma2		=	2.40d0		# hybrid gamma_th
+
+####### Output parameters #######
+ntinfo			=	100		# stdout
+dynamic_output_control  = 	1		# use output_control.F90
+vs_mass			=	0		# output .xg files vs mass_bary
+small_output		=	0		# used to limit .xg files
+dtout			=	1.0d-3		# time between outputs
+dtout_scalar		=	1.0d-4		# time between scalar out
+ntout			=	-1		# output every timesteps
+ntout_scalar		=	-1		# scalar output
+
+
+####### Restart parameters #######
+ntout_restart		=	-1		# restart output frequency in timesteps
+dtout_restart		=	0.005d0		# restart output frequency in time
+do_restart 		= 	0
+restart_file_name	=	""
+force_restart_dump	=	0		# keep this 0 to maintain output frequency, 1 forces output at start
+
+########## M1 settings ##########
+do_M1		 	=       1			#1 for M1 transport scheme
+v_order			=	-1
+evolution_radii		=	6.0d7			#radii to evolve neutrinos out to
+extraction_radii	=	5.0d7			#radii to extract neutrinos from
+number_species		=	3			#number of neutrino species, limited 
+							#options will work, must be comensurate with table
+number_groups		=	18			#number of energy groups, limited 
+							#options will work, must be comensurate with table
+opacity_table 		=	"NuLib_LS180_noweak_rho82_temp65_ye51_ng18_ns3_Itemp65_Ieta61_version1.0_20141111.h5"
+number_eas		=	3			#number of opacity variables to read in
+M1closure		=	'ME'
+testcase		=	0			#if you want a test case set this to the
+							#test case number, along with M1test as "initial_data"
+include_epannihil_kernels =	0			#for full nux thermal treatment
+include_nes_kernels	= 	1			#to read in inelastic neutrino electron scattering kernels
+nes_evolution_type	=	1			#0: no nes, 1: explicit nes, 2: implicit nes
+energycoupling_evolution_type =	1			#0: no coupling, 1: explicit coupling, 2: implicit coupling
+
+
+M1_control		=	1			#1 means you must specify the settings for each phase
+							# in the parameter file, collapse, bounce and postbounce.	
+
+M1_phase1phase2_density =	1.0d12			#central density to switch to phase 2
+M1_phase2phase3_pbtime  =	0.02d0			#post bounce time to switch to phase3
+
+M1_phase1_reconstruction =	'tvd'			#reconstruction method for both matter and neutrinos (phase1 must match above)
+M1_phase2_reconstruction =	'ppm'
+M1_phase3_reconstruction =	'ppm'
+
+M1_phase1_cffac 	=	0.5d0			#CFL factor, typically needs to be reduced near bounce
+M1_phase2_cffac 	=	0.2d0			
+M1_phase3_cffac		=	0.5d0
+
+M1_phase1_ns		=	1			#number of species to evolve
+M1_phase2_ns		=	3
+M1_phase3_ns		=	3
+
+M1_phase1_ies_way	=	1			#0 is none, 1 is explicit inelastic scattering, 2 is implicit (phase1 must match above)
+M1_phase2_ies_way	=	2			
+M1_phase3_ies_way	=	1
+
+M1_phase1_encpl_way	=	1			#0 is none, 1 is explicit energycoupling, 2 is implicit (phase1 must match above)
+M1_phase2_encpl_way	=	1			
+M1_phase3_encpl_way	=	1
+
+####### Neutrino parameters #######
+fake_neutrinos		=	0		# 1 for ANY fake neutrino scheme
+
+####### Atmosphere parameters #######
+atmo_rho_rel_min	=	0.0d0
+atmo_rho_abs_min	=	1.5d3
+atmo_fac		=	0.1d0
+
+####### Rotation #######
+do_rotation		=	0	# 1 for 1D rotation
+
