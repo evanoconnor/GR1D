@@ -5,7 +5,9 @@ MODINC="-I ./"
 
 HDF5DIR=
 HDF5INCS=-I${HDF5DIR}/include
-HDF5LIBS=-L${HDF5DIR}/lib -lhdf5 -lhdf5_fortran -lhdf5  -lz
+HDF5LIBS=-L${HDF5DIR}/lib -lhdf5 -lhdf5_fortran -lhdf5  -lz -Wl,-rpath,${HDF5DIR}/lib
+
+NULIBDIR=#use NuLib/src if linking to external NuLib library
 
 LAPACKDIR=
 LAPACKLIBS=-L${LAPACKDIR}/lib -llapack -lblas
