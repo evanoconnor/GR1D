@@ -28,7 +28,7 @@ subroutine M1_control
   endif
 
   if (phase.eq.1) then
-     reconstruction_method = M1_phase1_reconstruction
+     M1_reconstruction_method = M1_phase1_reconstruction
      cffac = M1_phase1_cffac
      number_species_to_evolve = M1_phase1_ns
      if (M1_phase1_ies_way.eq.0) then
@@ -56,7 +56,7 @@ subroutine M1_control
         stop "encpl_way not supported"
      endif
   else if (phase.eq.2) then
-     reconstruction_method = M1_phase2_reconstruction
+     M1_reconstruction_method = M1_phase2_reconstruction
      cffac = M1_phase2_cffac 
      number_species_to_evolve = M1_phase2_ns
      if (M1_phase2_ies_way.eq.0) then
@@ -84,7 +84,7 @@ subroutine M1_control
         stop "encpl_way not supported"
      endif
   else
-     reconstruction_method = M1_phase3_reconstruction  
+     M1_reconstruction_method = M1_phase3_reconstruction  
      cffac = M1_phase3_cffac
      number_species_to_evolve = M1_phase3_ns
      if (M1_phase3_ies_way.eq.0) then

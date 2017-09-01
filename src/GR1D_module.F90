@@ -93,6 +93,7 @@ module GR1D_module
   integer iorder_hydro
   character*80 hydro_formulation
   character*80 reconstruction_method
+  character*80 M1_reconstruction_method
 
   character*80 flux_type
 
@@ -131,7 +132,7 @@ module GR1D_module
   real*8 mgravX,mgrav12
   real*8 mbaryX,mbary12
   real*8 mass_inner_core
-  real*8 rXmax,r12max
+  real*8 rXmax,r12max,r11max
   real*8 heat_fac
 
   !rotation
@@ -153,7 +154,9 @@ module GR1D_module
 
   integer :: v_order
   real*8 :: M1_maxradii
+  real*8 :: M1_extractradii
   integer :: M1_imaxradii
+  integer :: M1_iextractradii
   integer :: number_species
   integer :: number_species_to_evolve
   integer :: number_groups
@@ -221,6 +224,7 @@ module GR1D_module
   ! specific internal energy, cell center and at interfaces
   real*8,allocatable,save :: eps(:),epsp(:),epsm(:)
   real*8,allocatable,save :: energy_nu(:)
+  real*8,allocatable,save :: mom_nu(:)
   ! mass interior cell center, mass of cell, volume of cell
   real*8,allocatable,save :: mass(:), mass1(:), volume(:)
   ! pressure 

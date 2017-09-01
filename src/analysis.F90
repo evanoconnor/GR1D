@@ -58,7 +58,7 @@ subroutine findaccretionradii
         elseif (x1i(i).lt.250.0d5*length_gf) then
            accretion_radii(10) = i
            accreted_mass(10) = interiormass(i)
-        elseif (x1i(i).lt.300.0d5*length_gf) then
+        elseif (x1i(i).lt.500.0d5*length_gf) then
            accretion_radii(11) = i     
            accreted_mass(11) = interiormass(i)   
         endif
@@ -101,7 +101,7 @@ subroutine mass_analysis
 
   integer i
   real*8 maxX
-  integer maxXi,mass12i
+  integer maxXi,mass12i,mass11i
   logical contflag
   integer inner_core_i
 
@@ -152,6 +152,7 @@ subroutine mass_analysis
   maxX = 1.0d0
   maxXi = ghosts1+1 
   mass12i = 0
+  mass11i = 0
   contflag = .true.
   do i=ghosts1+1,n1
      if (X(i).gt.maxX) then
@@ -161,6 +162,16 @@ subroutine mass_analysis
      
      if (rho(i)/rho_gf.gt.1.0d12.and.contflag) then
         mass12i = i
+     else
+        contflag = .false.
+     endif
+
+  enddo
+
+  contflag = .true.
+  do i=ghosts1+1,n1
+     if (rho(i)/rho_gf.gt.1.0d11.and.contflag) then
+        mass11i = i
      else
         contflag = .false.
      endif
@@ -185,6 +196,12 @@ subroutine mass_analysis
      mgrav12 = 0.0d0
      mbary12 = 0.0d0
      r12max = 0.0d0
+  endif
+
+  if(mass11i.gt.ghosts1.and.mass11i.le.n1-ghosts1) then
+     r11max = x1(mass11i)
+  else
+     r11max = 0.0d0
   endif
 
   !now find inner core size

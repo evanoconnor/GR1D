@@ -8,7 +8,7 @@ subroutine M1_init
        temp_mev_to_kelvin,number_species,volume,pi,M1_moment_to_distro,clite, &
        hbarc_mevcm,M1_testcase_number,v_order,include_nes_kernels, &
        M1_moment_to_distro_inverse,nulib_kernel_gf,number_species_to_evolve, &
-       include_epannihil_kernels
+       include_epannihil_kernels,M1_extractradii,M1_iextractradii
   use nulibtable
 
   implicit none
@@ -58,6 +58,11 @@ subroutine M1_init
   !find zone that matches maximum radii
   do i=1,n1
      if (x1(i)/length_gf.lt.M1_maxradii) M1_imaxradii = i
+  enddo
+
+  !find zone to extract
+  do i=1,n1
+     if (x1(i)/length_gf.lt.M1_extractradii) M1_iextractradii = i
   enddo
 
   if (v_order.eq.0.or.v_order.eq.-1) then

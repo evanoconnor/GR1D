@@ -24,6 +24,7 @@ subroutine initialize_vars
   ppm_origin_TVD = 0
       
   reconstruction_method = " "
+  M1_reconstruction_method = " "
   tvd_limiter = " "
   flux_type = " "
   fake_neutrinos = .false.
@@ -40,7 +41,9 @@ subroutine initialize_vars
   M1_do_backwardfix = 0
   v_order = -1
   M1_maxradii = 0.0d0
+  M1_extractradii = 0.0d0
   M1_imaxradii = 0
+  M1_iextractradii = 0
   number_species = 0
   number_species = -1
   number_species_to_evolve = -1
@@ -67,6 +70,7 @@ subroutine initialize_vars
   mbary12 = 0.0d0
   rXmax = 0.0d0
   r12max = 0.0d0
+  r11max = 0.0d0
   mass_inner_core = 0.0d0
   heat_fac = 0.0d0
 
@@ -133,6 +137,7 @@ subroutine initialize_arrays
   epsm(:) = 0.0d0
 
   energy_nu(:) = 0.0d0
+  mom_nu(:) = 0.0d0
   
   eps_kin(:) = 0.0d0
   binding_energy(:) = 0.0d0

@@ -144,7 +144,8 @@ subroutine input_parser
   if(do_M1) then
      call get_integer_parameter('v_order',v_order)
      if (fake_neutrinos) stop "M1 neutrino's are not fake, how dare you (fake_neutrino needs to be 0 for M1)" 
-     call get_double_parameter('extraction_radii',M1_maxradii)
+     call get_double_parameter('evolution_radii',M1_maxradii)
+     call get_double_parameter('extraction_radii',M1_extractradii)
      call get_integer_parameter('number_species',number_species)
      call get_integer_parameter('number_groups',number_groups)
      call get_integer_parameter('number_eas',number_eas)
@@ -203,10 +204,6 @@ subroutine input_parser
         call get_integer_parameter('M1_phase1_ies_way',M1_phase1_ies_way)
         call get_integer_parameter('M1_phase1_encpl_way',M1_phase1_encpl_way)
 
-        if (M1_phase1_reconstruction.ne.reconstruction_method) then
-           write(*,*) "Initial M1 reconstruction method not the same as specified in main parameters"
-           stop
-        endif
         if ((M1_phase1_ies_way.eq.0).and.(include_Ielectron_exp.or.include_Ielectron_imp)) then
            write(*,*) "Initial M1 inelastic electron scattering method not the same as specified in main parameters"
            stop

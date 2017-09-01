@@ -65,10 +65,10 @@ subroutine M1_reconstruct
         M1flux_space = M1flux_space/M1en_space
 
         !reconstruct
-        if (reconstruction_method.eq.'tvd') then
+        if (M1_reconstruction_method.eq.'tvd') then
            call tvd_reconstruction(n1,ghosts1,M1en_space,M1en_space_plus,M1en_space_minus,'minmod')
            call tvd_reconstruction(n1,ghosts1,M1flux_space,M1flux_space_plus,M1flux_space_minus,'minmod') 
-        else if (reconstruction_method.eq.'ppm') then
+        else if (M1_reconstruction_method.eq.'ppm') then
            call ppm_interpolate(M1en_space,M1en_space_plus,M1en_space_minus)
            call ppm_interpolate(M1flux_space,M1flux_space_plus,M1flux_space_minus)
            call ppm_monotonize(M1en_space,M1en_space_plus,M1en_space_minus)

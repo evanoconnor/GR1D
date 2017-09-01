@@ -35,6 +35,7 @@ subroutine allocate_vars
   allocate(epsm(n1))
 
   allocate(energy_nu(n1))
+  allocate(mom_nu(n1))
 
   allocate(eps_kin(n1))
   allocate(binding_energy(n1))
