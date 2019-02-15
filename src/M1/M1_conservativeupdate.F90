@@ -18,9 +18,11 @@ subroutine M1_conservativeupdate(dts)
   integer keyerr,keytemp
   real*8 eosdummy(14)
   logical ::  passfluxtest
+  real*8 :: oldeps_forheat(n1)
 
   nogain = .true.
   total_net_heating = 0.0d0
+  total_net_deintdt = 0.0d0
   total_mass_gain = 0.0d0
   igain(1) = ghosts1+1
   gain_radius = 0.0d0
@@ -93,6 +95,8 @@ subroutine M1_conservativeupdate(dts)
   endif
 
   !reconstruct primatives
+  !but first, retain old eps to determined heating rate
+  oldeps_forheat = eps
   call con2prim
 
   ! eos update, eps fixed, find temp,entropy,cs2 etc.
@@ -117,6 +121,14 @@ subroutine M1_conservativeupdate(dts)
         write(6,*) "timestep number: ",nt
         write(6,"(i4,1P10E15.6)") k,x1(k),rho(k)/rho_gf,temp(k),eps(k)/eps_gf,ye(k)
      endif
+
+     if (eps(k).gt.oldeps_forheat(k)) then
+        if ((rho(k)/rho_gf.lt.3.0d10).and.(entropy(k).gt.6.0d0)) then
+           !gain region
+           total_net_deintdt = total_net_deintdt + volume(k)*rho(k)*(eps(k)-oldeps_forheat(k))/energy_gf/(dts/time_gf)
+        endif
+     endif
+
   enddo
 
   !GR gravity updates that rely on primitive variables

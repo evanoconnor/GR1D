@@ -61,6 +61,7 @@ subroutine initialize_vars
   total_energy_radiated = 0.0d0
   total_energy_absorped = 0.0d0
   total_net_heating = 0.0d0
+  total_net_deintdt = 0.0d0
 
   shock_radius = 0.0d0      
   ishock(1) = ghosts1+1
