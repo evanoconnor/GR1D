@@ -173,7 +173,7 @@ module GR1D_module
   real*8 :: total_energy_radiated
   real*8 :: total_energy_absorped
   real*8 :: total_net_heating
-  real*8 :: total_net_deintde
+  real*8 :: total_net_deintdt
   real*8 :: total_mass_gain
 
   !M1 controls
