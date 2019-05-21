@@ -11,6 +11,7 @@ module nulibtable
   real*8, allocatable,save :: nulibtable_ye(:)
   real*8, allocatable,save :: nulibtable_logItemp(:)
   real*8, allocatable,save :: nulibtable_logIeta(:)
+  real*8, allocatable,save :: nulibtable_logn_N(:)
   
   
   real*8, allocatable,save :: nulibtable_energies(:)
@@ -31,6 +32,8 @@ module nulibtable
 
   real*8, allocatable,save :: nulibtable_epannihiltable_Phi0(:,:,:)
   real*8, allocatable,save :: nulibtable_epannihiltable_Phi1(:,:,:)
+  
+  real*8, allocatable,save :: nulibtable_bremsstrahlung_Phi0(:,:,:)
 
   integer :: nulibtable_nrho
   integer :: nulibtable_ntemp
@@ -38,7 +41,8 @@ module nulibtable
 
   integer :: nulibtable_nItemp
   integer :: nulibtable_nIeta
-
+  integer :: nulibtable_nn_N
+  
   real*8 :: nulibtable_logrho_min
   real*8 :: nulibtable_logrho_max
 
@@ -53,6 +57,9 @@ module nulibtable
 
   real*8 :: nulibtable_logIeta_min
   real*8 :: nulibtable_logIeta_max
+  
+  real*8 :: nulibtable_logn_N_max
+  real*8 :: nulibtable_logn_N_min
 
   integer :: nulibtable_number_easvariables
 
@@ -528,6 +535,9 @@ subroutine nulibtable_epannihil_single_species_range_energy2(xtemp,xeta, &
   endindex = startindex + nulibtable_number_groups*nulibtable_number_groups*2 - 1
 
   xeas = 0.0d0
+  
+!~   write(*,*) MAXVAL(nulibtable_epannihiltable_Phi0),MINVAL(nulibtable_epannihiltable_Phi0)
+  
   call intp2d_many_mod(xltemp,xleta,xeas,nulibtable_epannihiltable_Phi0(:,:,startindex:endindex), &
        nulibtable_nItemp,nulibtable_nIeta,eas_n1*eas_n2*2,nulibtable_logItemp,nulibtable_logIeta)
 
@@ -561,4 +571,155 @@ subroutine nulibtable_epannihil_single_species_range_energy2(xtemp,xeta, &
   enddo
   
 end subroutine nulibtable_epannihil_single_species_range_energy2
+
+!this takes temp,eta, and return phi0/1 for ep-annihilation over energy (both neutrinos) and species range
+subroutine nulibtable_bremsstrahlung_range_species_range_energy2(xtemp,xn_N, &
+     eas,eas_n1,eas_n2,eas_n3,eas_n4)
+
+  use nulibtable
+  implicit none
+
+  real*8, intent(in) :: xtemp, xn_N(3) !inputs
+  real*8 :: xltemp, xln_N !log versions
+  integer, intent(in) :: eas_n1,eas_n2,eas_n3,eas_n4
+  real*8, intent(out) :: eas(eas_n1,eas_n2,eas_n3,eas_n4)
+  integer :: ins,ing_this,ing_that,i
+  real*8 :: xeas(eas_n1*eas_n2*eas_n3*2)
+  integer :: index
+  real*8 :: energy_conversion = 1.60217733d-6*5.59424238d-55
+
+
+  if(size(eas,1).ne.nulibtable_number_species) then
+     stop "nulibtable_bremsstrahlung_range_species_range_energy: supplied array dimensions (1) is not commensurate with table"
+  endif
+  if(size(eas,2).ne.nulibtable_number_groups) then
+     stop "nulibtable_bremsstrahlung_range_species_range_energy: supplied array dimensions (2) is not commensurate with table"
+  endif  
+  if(size(eas,3).ne.nulibtable_number_groups) then
+     stop "nulibtable_bermsstrahlung_range_species_range_energy: supplied array dimensions (3) is not commensurate with table"
+  endif
+  if(size(eas,4).ne.2) then
+     stop "nulibtable_bremsstrahlung_range_species_range_energy: supplied array dimensions (4) is not commensurate with table"
+  endif
+  
+  xltemp = log10(xtemp)
+  if (xltemp.lt.nulibtable_logItemp_min) stop "temp below nulib bremsstrahlung table minimum temp"
+  if (xltemp.gt.nulibtable_logItemp_max) stop "temp above nulib bremsstrahlung table maximum temp"  
+  
+  do i=1,3
+  
+
+	  xln_N = log10(xn_N(i))
+	
+
+	  if (xln_N.lt.nulibtable_logn_N_min) stop "n_N below nulib bremsstrahlung table minimum n_N"
+	  if (xln_N.gt.nulibtable_logn_N_max) stop "n_N above nulib bremsstrahlung table maximum n_N"
+	
+	  xeas = 0.0d0
+	  call intp2d_many_mod(xltemp,xln_N,xeas,nulibtable_bremsstrahlung_Phi0,nulibtable_nItemp, &
+	       nulibtable_nn_N,eas_n1*eas_n2*eas_n2*2,nulibtable_logItemp, &
+	       nulibtable_logn_N)
+	
+	  index = 0
+	  do ins=1,nulibtable_number_species
+	     do ing_this=1,nulibtable_number_groups
+	        do ing_that=1,nulibtable_number_groups
+				if ( i .EQ. 3) then
+		           index = index + 1
+		           eas(ins,ing_this,ing_that,1) = eas(ins,ing_this,ing_that,1) + &
+													28.0d0/3.0d0*10.0d0**xeas(index)
+		           index = index + 1
+		           eas(ins,ing_this,ing_that,2) = eas(ins,ing_this,ing_that,2) + &
+													28.0d0/3.0d0*10.0d0**xeas(index)
+		        else 
+		           index = index + 1
+		           eas(ins,ing_this,ing_that,1) = eas(ins,ing_this,ing_that,1) + &
+										           10.0d0**xeas(index)
+		           index = index + 1
+		           eas(ins,ing_this,ing_that,2) = eas(ins,ing_this,ing_that,2) + &
+										           10.0d0**xeas(index)
+		        endif
+	        enddo
+	     enddo
+	  enddo
+  enddo
+  
+  
+end subroutine nulibtable_bremsstrahlung_range_species_range_energy2
+
+!this takes temp,n_N, and return bremsstrahlungation phi0 over energy (both nus) range for a single species
+subroutine nulibtable_bremsstrahlung_single_species_range_energy2(xtemp,xn_N, &
+     lns,eas,eas_n1,eas_n2,eas_n3)
+
+  use nulibtable
+  implicit none
+
+  real*8, intent(in) :: xtemp, xn_N(3) !inputs
+  real*8 :: xltemp, xln_N !log versions
+  integer, intent(in) :: lns,eas_n1,eas_n2,eas_n3
+  real*8, intent(out) :: eas(eas_n1,eas_n2,eas_n3)
+  integer :: ing_this,ing_that,i
+  real*8 :: xeas(eas_n1*eas_n2*2)
+  integer :: index
+  real*8 :: energy_conversion = 1.60217733d-6*5.59424238d-55
+  integer :: startindex,endindex
+
+  if(size(eas,1).ne.nulibtable_number_groups) then
+     stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (1) is not commensurate with table"
+  endif  
+  if(size(eas,2).ne.nulibtable_number_groups) then
+     stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (2) is not commensurate with table"
+  endif
+  if(size(eas,3).ne.2) then
+     stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (3) is not commensurate with table"
+  endif
+
+  xltemp = log10(xtemp)
+  if (xltemp.lt.nulibtable_logItemp_min) stop "temp below nulib bremsstrahlung table minimum temp"
+  if (xltemp.gt.nulibtable_logItemp_max) stop "temp above nulib bremsstrahlung table maximum temp"  
+  
+  eas = 0.0d0
+  
+  do i =1,3
+	  xln_N = log10(xn_N(i))
+	
+
+	  if (xln_N.lt.nulibtable_logn_N_min) stop "n_N below nulib bremsstrahlung table minimum n_N"
+	  if (xln_N.gt.nulibtable_logn_N_max) stop "n_N above nulib bremsstrahlung table maximum n_N"
+	
+	  startindex = (lns-1)*nulibtable_number_groups*nulibtable_number_groups*2+1
+	  endindex = startindex + nulibtable_number_groups*nulibtable_number_groups*2 - 1
+!~         write(*,*) MAXVAL(nulibtable_bremsstrahlung_Phi0),MINVAL(nulibtable_bremsstrahlung_Phi0)
+	  xeas = 0.0d0
+	  call intp2d_many_mod(xltemp,xln_N,xeas,nulibtable_bremsstrahlung_Phi0(:,:,startindex:endindex), &
+	       nulibtable_nItemp,nulibtable_nn_N,eas_n1*eas_n2*2,nulibtable_logItemp,nulibtable_logn_N)
+!~         write(*,*) MAXVAL(xeas),MINVAL(xeas)
+!~     stop
+	  index = 0
+	  do ing_this=1,nulibtable_number_groups
+	     do ing_that=1,nulibtable_number_groups
+		     if (i .eq. 3) then 
+		        index = index + 1
+		        eas(ing_this,ing_that,1) = eas(ing_this,ing_that,1) + &
+											28.0d0/3.0d0*10.0d0**xeas(index)
+		        index = index + 1
+		        eas(ing_this,ing_that,2) = eas(ing_this,ing_that,2) + &
+									        28.0d0/3.0d0*10.0d0**xeas(index)
+		     else
+		        index = index + 1
+		        eas(ing_this,ing_that,1) = eas(ing_this,ing_that,1) + &
+									        10.0d0**xeas(index)
+		        index = index + 1
+		        eas(ing_this,ing_that,2) = eas(ing_this,ing_that,2) + &
+                                           10.0d0**xeas(index)
+		     endif
+	     enddo
+	  enddo
+  enddo
+
+  if (ANY(eas <0.0d0)) then
+    stop "nulib : eas_brem <0"
+  endif
+  
+end subroutine nulibtable_bremsstrahlung_single_species_range_energy2
 
