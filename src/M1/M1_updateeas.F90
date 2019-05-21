@@ -6,8 +6,9 @@ subroutine M1_updateeas
   use nulibtable
   implicit none
 
-  real*8 :: xrho,xtemp,xye,xeta
-  integer :: k,i,j
+  real*8 :: xrho,xtemp,xye,xeta,xxp,xxn
+  real*8,dimension(3) :: xn_N
+  integer :: k,i,j,spec
 
   real*8 :: tempspectrum(number_species,number_groups,number_eas)
   real*8 :: singlespecies_tempspectrum(number_groups,number_eas)
@@ -17,18 +18,31 @@ subroutine M1_updateeas
 
   real*8 :: epannihil_tempspectrum(number_species,number_groups,number_groups,4)
   real*8 :: singlespecies_epannihil_tempspectrum(number_groups,number_groups,4)
+  
+  real*8 :: bremsstrahlung_tempspectrum(number_species,number_groups,number_groups,2)
+  real*8 :: singlespecies_bremsstrahlung_tempspectrum(number_groups,number_groups,2)
 
   real*8 :: blackbody_spectra(number_species,number_groups)
   real*8 :: energy_x
+  
+  real*8 :: integrator,integrator2
+  integer :: myid
+  real,parameter :: m_amu = 931.494061d0 !MeV
+  real,parameter :: mev_to_gram = 1.782661758d-27 !one MeV is # grams
 
   integer :: keytemp,keyerr
   real*8 :: eosdummy(17)
 
-  if (M1_testcase_number.eq.0.or.M1_testcase_number.eq.1) then
+  if (M1_testcase_number.eq.0 .or.M1_testcase_number.eq.1) then
 
-     !$OMP PARALLEL DO PRIVATE(xrho,xtemp,xye,tempspectrum,singlespecies_tempspectrum, &
+     !$OMP PARALLEL DO PRIVATE(xrho,xtemp,xye,xxn,xxp,xn_N,tempspectrum,singlespecies_tempspectrum, &
      !$OMP keytemp,keyerr,eosdummy,xeta,inelastic_tempspectrum,singlespecies_inelastic_tempspectrum, &
-     !$OMP epannihil_tempspectrum,singlespecies_epannihil_tempspectrum,blackbody_spectra,energy_x,i,j)
+     !$OMP epannihil_tempspectrum,singlespecies_epannihil_tempspectrum,integrator2,integrator, &
+     !$OMP bremsstrahlung_tempspectrum,singlespecies_bremsstrahlung_tempspectrum,blackbody_spectra, & 
+     !$omp energy_x,i,j,spec)
+
+
+     
      do k=2,M1_imaxradii+ghosts1-1
         
         xrho = rho(k)/rho_gf
@@ -106,15 +120,20 @@ subroutine M1_updateeas
            eas(k,:,:,:) = tempspectrum(:,:,:)
         endif
 
-        !get electron chemical potential if scattering/epannihil is turned on
-        if (include_Ielectron_exp.or.include_Ielectron_imp.or.include_epannihil_kernels) then
+        !get electron chemical potential if scattering/epannihil is turned on &
+        ! get number density if bremsstrahlung is turned on
+        
+        if (include_Ielectron_exp.or.include_Ielectron_imp.or.include_epannihil_kernels &
+			.or. include_bremsstrahlung_kernels) then
            keytemp = 1 !keep temperature, not resetting any hydro variables
            keyerr = 0       
            call nuc_eos_full(xrho,xtemp,xye,eosdummy(1),eosdummy(2),eosdummy(3), &
                 eosdummy(4),eosdummy(5),eosdummy(6),eosdummy(7),eosdummy(8), &
-                eosdummy(9),eosdummy(10),eosdummy(11),eosdummy(12), &
+                eosdummy(9),xxn,xxp,eosdummy(12), &
                 eosdummy(13),elechem(k),eosdummy(15),eosdummy(16),eosdummy(17), &
                 keytemp,keyerr,eos_rf_prec)
+
+                
            if(keyerr.ne.0) then
               write(6,*) "############################################"
               write(6,*) "EOS PROBLEM in M1_updateeas.F90:"
@@ -125,8 +144,15 @@ subroutine M1_updateeas
 
            xtemp = temp(k)
            xeta = elechem(k)/temp(k)
+           
+           if (include_bremsstrahlung_kernels) then
+	           xn_N(1) = xxn*xrho/(m_amu*mev_to_gram)
+			   xn_N(2) = xxp*xrho/(m_amu*mev_to_gram)
+               xn_N(3) = SQRT(xxn*xxp)*xrho/(m_amu*mev_to_gram)
+           endif
+           
         endif
-
+        
         if (include_Ielectron_imp.or.include_Ielectron_exp) then
            inelastic_tempspectrum = 0.0d0
            if (log10(xrho).lt.nulibtable_logrho_min) then
@@ -190,6 +216,88 @@ subroutine M1_updateeas
            
            !set new ep annihilation variables
            epannihil(k,:,:,:,:) = epannihil_tempspectrum(:,:,:,:)
+
+        endif
+        
+        
+        !get bremsstrahlung kernels for i.eq.3 only, if turned on
+        if (include_bremsstrahlung_kernels) then
+           bremsstrahlung_tempspectrum = 0.0d0
+           if (log10(xrho).lt.nulibtable_logrho_min) then
+              bremsstrahlung_tempspectrum = 0.0d0
+           else
+              if (log10(xtemp).lt.nulibtable_logItemp_min) stop "M1_update_eas: Itemp too low"
+              if (ANY(log10(xn_N).lt.nulibtable_logn_N_min)) then
+                 write(*,*) xrho,xtemp,xye,xn_N
+                 stop "M1_update_eas: n_N too low"
+              endif
+              if (log10(xtemp).gt.nulibtable_logItemp_max) stop "M1_update_eas: temp too high"
+              if (ANY(log10(xn_N).gt.nulibtable_logn_N_max)) then
+                 write(*,*) xrho,xtemp,xye,xn_N,nulibtable_logn_N_max,k
+                 stop "M1_update_eas: n_N too high"
+              endif
+!~                 write(*,*) log10(xrho)
+              !only do this for nux
+              i = 3
+!~               xtemp = 26.0298d0
+!~               xn_N=1.54314e+28
+              call nulibtable_bremsstrahlung_single_species_range_energy2(xtemp,xn_N,i, &
+                   singlespecies_bremsstrahlung_tempspectrum,number_groups,number_groups,2)
+                   
+                if ( ANY(singlespecies_bremsstrahlung_tempspectrum < 0.0d0) ) then
+                    write(*,*) xrho,xtemp,xye,xn_N,nulibtable_logn_N_max,k
+                    stop "brem <0"
+                endif
+!~                 write(*,*)  singlespecies_bremsstrahlung_tempspectrum(11,11,1)
+!~                 write(*,*) nulibtable_energies(10),nulibtable_energies(11)
+!~                 write(*,*) nulibtable_ewidths(11)
+!~                 stop
+!~ 			  do spec = 1,3
+	              bremsstrahlung_tempspectrum(1,:,:,:) = singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+	              bremsstrahlung_tempspectrum(2,:,:,:) = singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+	              bremsstrahlung_tempspectrum(3,:,:,:) = singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+!~               enddo
+           endif
+           
+           !set new ep annihilation variables
+           bremsstrahlung(k,:,:,:,:) = bremsstrahlung_tempspectrum(:,:,:,:)
+       
+!~        if (xrho .GT. 1.0d13) then
+!~ 	        open (unit = 2, file = "brem.txt")
+!~ 	        write(2,*) xrho,xtemp,xye,xeta,xn_N(1),xn_N(2),xn_N(3)
+!~ 	        do i = 1,number_groups
+!~ 	        integrator=0.0d0
+!~ 	        integrator2=0.0d0
+	        
+!~ 				!energy integration loop
+!~ 				do j = 1,number_groups
+!~ 				write(*,*) i,j
+!~ 					integrator= integrator +(2.0d0*pi)  &
+!~ 					*singlespecies_bremsstrahlung_tempspectrum(i,j,1) &
+!~ 						* nulibtable_energies(j) **2 * nulibtable_ewidths(j)
+						
+!~ 					integrator2= integrator2 + (2.0d0*pi) &
+!~ 					 *singlespecies_epannihil_tempspectrum(i,j,1) &
+!~ 						* nulibtable_energies(j) **2 * nulibtable_ewidths(j)
+!~ 				enddo
+				
+!~ 				! write the energy & values in brem.txt
+!~ 				write(2,*) nulibtable_energies(i) & 
+!~ 							,integrator*(4.0d0*pi)  /(2.0d0 * pi *hbarc_mevcm)**6 &
+!~ 						   * nulibtable_energies(i)**3 * 1d-36 &
+!~ 							, integrator2 *(4.0d0*pi) /(2.0d0 * pi *hbarc_mevcm)**6 &
+!~ 							* nulibtable_energies(i)**3 * 1d-36
+!~ 			enddo
+!~ 			close(2)
+!~ 			write(*,*) nulibtable_energies
+!~ 			write(*,*) nulibtable_ewidths
+!~ 			write(*,*) singlespecies_bremsstrahlung_tempspectrum(1,:,1)
+!~ 			write(*,*)
+!~ 			write(*,*) singlespecies_epannihil_tempspectrum(:,1,1)
+!~ 			write(*,*) number_groups
+!~ 			write(*,*) hbarc_mevcm,pi
+!~ 			stop
+!~         endif
 
         endif
 

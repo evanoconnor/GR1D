@@ -30,17 +30,26 @@ subroutine M1_implicitstep(dts,implicit_factor)
   real*8 :: R0pro,R0ann,R1pro,R1ann,epannihil_temp
   real*8 :: ies_sourceterms(2*number_groups)
   real*8 :: epannihil_sourceterms(2*number_groups)
+  real*8 :: bremsstrahlung_sourceterms(2*number_groups)
   real*8 :: local_M(2,2),local_J(number_groups),local_H(number_groups,2)
   real*8 :: local_Mbar(2,2),local_Jbar(number_groups),local_Hbar(number_groups,2)
   real*8 :: Ebar(number_groups),Fbar(number_groups),eddybar(number_groups)
   real*8 :: local_L(number_groups,2,2),local_Hdown(number_groups,2)
+  real*8 :: local_Lbar(number_groups,2,2),local_Hdownbar(number_groups,2)
   real*8 :: local_Ltilde(number_groups,2,2)
+  real*8 :: local_Ltildebar(number_groups,2,2)
   real*8 :: local_dMdE(2,2),local_dJdE(number_groups),local_dHdE(number_groups,2)
+  real*8 :: local_dMbardE(2,2),local_dJbardE(number_groups),local_dHbardE(number_groups,2)
+  real*8 :: local_dLbardE(number_groups,2,2),local_dHdownbardE(number_groups,2)
   real*8 :: local_dLdE(number_groups,2,2),local_dHdowndE(number_groups,2)
+  real*8 :: local_dLtildebardE(number_groups,2,2)
   real*8 :: local_dLtildedE(number_groups,2,2)
   real*8 :: local_dMdF(2,2),local_dJdF(number_groups),local_dHdF(number_groups,2)
+  real*8 :: local_dMbardF(2,2),local_dJbardF(number_groups),local_dHbardF(number_groups,2)
   real*8 :: local_dLdF(number_groups,2,2),local_dHdowndF(number_groups,2)
+  real*8 :: local_dLbardF(number_groups,2,2),local_dHdownbardF(number_groups,2)
   real*8 :: local_dLtildedF(number_groups,2,2)
+  real*8 :: local_dLtildebardF(number_groups,2,2)
   real*8 :: JoverE(number_groups)
   real*8 :: JoverF(number_groups),HoverE(number_groups,2),HoverF(number_groups,2)
   real*8 :: LoverE(number_groups,2,2),LoverF(number_groups,2,2)
@@ -99,10 +108,15 @@ subroutine M1_implicitstep(dts,implicit_factor)
   !$OMP alp2,onealp,invX,invX2,X2,oneX,W2,oneW,v2,onev,invr,invr2,local_u,local_uup, &
   !$OMP local_littleh,local_littlehdowndown,local_littlehupup,stillneedconvergence, &
   !$OMP count,ies_sourceterms,epannihil_sourceterms,RF, &
-  !$OMP NL_jacobian,local_M,local_J,local_H,local_Mbar,local_Jbar,local_Hbar,local_L, &
+  !$OMP NL_jacobian,local_M,local_J,local_H, &
+  !$OMP local_Mbar,local_Jbar,local_Hbar,local_L,local_Lbar, &
   !$OMP local_dMdE,local_dJdE,local_dHdE,local_dLdE,local_dMdF,local_dJdF,local_dHdF, &
+  !$OMP local_dMbardE,local_dJbardE,local_dHbardE,local_dLbardE,&
+  !$OMP local_dMbardF,local_dJbardF,local_dHbardF, local_dLbardF,&
   !$OMP local_dLdF,Ebar,Fbar,eddybar,ii,jj,local_Hdown,local_dHdowndE,local_dHdowndF, &
-  !$OMP local_Ltilde,local_dLtildedE,local_dLtildedF,j_prime,nucubed, &
+  !$OMP local_Ltilde,local_dLtildedE,local_dLtildedF, &
+  !$OMP local_Hdownbar,local_dHdownbardE,local_dHdownbardF, &
+  !$OMP local_Ltildebar,local_dLtildebardE,local_dLtildebardF,j_prime,nucubed, &
   !$OMP nucubedprime,R0pro,R0ann,R1pro,R1ann,epannihil_temp,R0out,R1out,R0in,R1in, &
   !$OMP ies_temp,NLenergyfluxterms,dNLenergyfluxtermsdx,dmdr,dmdt,dXdr,dXdt,Kdownrr, &
   !$OMP dWdt,dWdr,dWvuprdt,dWvuprdr,Z,Yupr,Xuprr,Xupff,heatterm_NL,heattermff_NL, &
@@ -332,7 +346,8 @@ subroutine M1_implicitstep(dts,implicit_factor)
            NL_jacobian = 0.0d0       
 
            !ep annihilation or Ielectron scattering determine fluid terms
-           if ((include_epannihil_kernels.and.i.eq.3).or.include_Ielectron_imp) then
+        if ((include_epannihil_kernels.and.i.eq.3).or.include_Ielectron_imp &
+            .or. (include_bremsstrahlung_kernels.and.i.eq.3)) then
               local_M = 0.0d0
               local_J = 0.0d0
               local_H = 0.0d0
@@ -340,6 +355,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
               local_Jbar = 0.0d0
               local_Hbar = 0.0d0
               local_L = 0.0d0
+              local_Lbar = 0.0d0
               local_dMdE = 0.0d0
               local_dJdE = 0.0d0
               local_dHdE = 0.0d0
@@ -348,6 +364,14 @@ subroutine M1_implicitstep(dts,implicit_factor)
               local_dJdF = 0.0d0
               local_dHdF = 0.0d0
               local_dLdF = 0.0d0
+              local_dMbardE = 0.0d0
+              local_dJbardE = 0.0d0
+              local_dHbardE = 0.0d0
+              local_dLbardE = 0.0d0
+              local_dMbardF = 0.0d0
+              local_dJbardF = 0.0d0
+              local_dHbardF = 0.0d0
+              local_dLbardF = 0.0d0
 
               if (i.eq.3.and.number_species.eq.3) then
                  species_factor = 4.0d0
@@ -364,11 +388,13 @@ subroutine M1_implicitstep(dts,implicit_factor)
                  Ebar(:) = q_M1_old(k,2,:,1) !antinue at time (n), because order of species loop
                  Fbar(:) = q_M1_old(k,2,:,2) !antinue at time (n), because order of species loop
                  eddybar(:) = q_M1_old(k,2,:,3) !antinue at time (n), because order of species loop
+!~                  write(*,*) "nue",dts
               else if (i.eq.2) then
                  !implicit neutrino pair production/annihilation isn't tested for i.eq.1 or i.eq.2
-                 Ebar(:) = q_M1_old(k,1,:,1) !nue at time (n+1), because order of species loop
+                 Ebar(:) = q_M1_old(k,1,:,1) !nue at time (n+1), because order of species loop  !!! no
                  Fbar(:) = q_M1_old(k,1,:,2) !nue at time (n+1), because order of species loop
                  eddybar(:) = q_M1_old(k,1,:,3) !nue at time (n+1), because order of species loop
+!~                  write(*,*) "anue",dts
               else if (i.eq.3.and.number_species.eq.3) then
                  Ebar(:) = NLsolve_x(1:number_groups) !nux at time (n)
                  Fbar(:) =  NLsolve_x(number_groups+1:2*number_groups)!nux at time (n)
@@ -390,10 +416,15 @@ subroutine M1_implicitstep(dts,implicit_factor)
                  local_Mbar(2,1) = local_Mbar(1,2)
                  local_Mbar(2,2) = eddybar(j)*Ebar(j)*invX2**2*ispecies_factor
 
-                 local_dMdE(1,1) = invalp2
+                 local_dMdE(1,1) = invalp2   ! why no ispecies factor ?
                  local_dMdF(1,2) = invX2*invalp
                  local_dMdF(2,1) = local_dMdF(1,2)
                  local_dMdE(2,2) = eddy(j)*invX2**2
+                 
+                 local_dMbardE(1,1) = invalp2
+                 local_dMbardF(1,2) = invX2*invalp
+                 local_dMbardF(2,1) = local_dMdF(1,2)
+                 local_dMbardE(2,2) = eddybar(j)*invX2**2
                  
 
                  do ii=1,2
@@ -402,16 +433,32 @@ subroutine M1_implicitstep(dts,implicit_factor)
                        local_Jbar(j) = local_Jbar(j) + local_Mbar(ii,jj)*local_u(ii)*local_u(jj)
                        local_dJdE(j) = local_dJdE(j) + local_dMdE(ii,jj)*local_u(ii)*local_u(jj)
                        local_dJdF(j) = local_dJdE(j) + local_dMdF(ii,jj)*local_u(ii)*local_u(jj)
-
+					   if (i .EQ. 2) then 
+	                       local_dJbardE(j) = local_dJbardE(j) + local_dMbardE(ii,jj)*local_u(ii)*local_u(jj)
+	                       local_dJbardF(j) = local_dJbardE(j) + local_dMbardF(ii,jj)*local_u(ii)*local_u(jj)
+						endif
+		
                        !H^{a}
                        local_H(j,1) = local_H(j,1) - local_M(ii,jj)*local_u(ii)*local_littleh(1,jj)
                        local_Hbar(j,1) = local_Hbar(j,1) - local_Mbar(ii,jj)*local_u(ii)*local_littleh(1,jj)
                        local_dHdE(j,1) = local_dHdE(j,1) - local_dMdE(ii,jj)*local_u(ii)*local_littleh(1,jj)
                        local_dHdF(j,1) = local_dHdF(j,1) - local_dMdF(ii,jj)*local_u(ii)*local_littleh(1,jj)
+                       if (i .EQ. 2) then
+	                       local_dHbardE(j,1) = local_dHbardE(j,1) - &
+												local_dMbardE(ii,jj)*local_u(ii)*local_littleh(1,jj)
+	                       local_dHbardF(j,1) = local_dHbardF(j,1) - &
+												local_dMbardF(ii,jj)*local_u(ii)*local_littleh(1,jj)
+	                   endif 
                        local_H(j,2) = local_H(j,2) - local_M(ii,jj)*local_u(ii)*local_littleh(2,jj)
                        local_Hbar(j,2) = local_Hbar(j,2) - local_Mbar(ii,jj)*local_u(ii)*local_littleh(2,jj)
                        local_dHdE(j,2) = local_dHdE(j,2) - local_dMdE(ii,jj)*local_u(ii)*local_littleh(2,jj)
                        local_dHdF(j,2) = local_dHdF(j,2) - local_dMdF(ii,jj)*local_u(ii)*local_littleh(2,jj)
+                       if ( i.EQ. 2) then 
+	                       local_dHbardE(j,2) = local_dHbardE(j,2) - &
+											 local_dMbardE(ii,jj)*local_u(ii)*local_littleh(2,jj)
+	                       local_dHbardF(j,2) = local_dHbardF(j,2) - &
+											 local_dMbardF(ii,jj)*local_u(ii)*local_littleh(2,jj)
+	                   endif
                     enddo
                  enddo
 
@@ -427,27 +474,62 @@ subroutine M1_implicitstep(dts,implicit_factor)
                        local_dLdF(j,1,1) = local_dLdF(j,1,1) + &
                             (local_dMdF(ii,jj)*local_littleh(1,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
                             (local_littlehupup(1,1)*local_dJdF(j)*onethird)*(1.5d0-1.5d0*chi(j))
-
+	                   if ( i .EQ. 2) then 
+		                   local_Lbar(j,1,1) = local_Lbar(j,1,1) + &
+	                            (local_Mbar(ii,jj)*local_littleh(1,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+	                            (local_littlehupup(1,1)*local_Jbar(j)*onethird)*(1.5d0-1.5d0*chi(j))
+	                       local_dLbardE(j,1,1) = local_dLbardE(j,1,1) + &
+	                            (local_dMbardE(ii,jj)*local_littleh(1,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+	                            (local_littlehupup(1,1)*local_dJbardE(j)*onethird)*(1.5d0-1.5d0*chi(j))
+	                       local_dLbardF(j,1,1) = local_dLbardF(j,1,1) + &
+	                            (local_dMbardF(ii,jj)*local_littleh(1,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+	                            (local_littlehupup(1,1)*local_dJbardF(j)*onethird)*(1.5d0-1.5d0*chi(j))
+					   endif
+						
                        local_L(j,1,2) = local_L(j,1,2) + &
-                            (local_M(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
-                            (local_littlehupup(1,2)*local_J(j)*onethird)*(1.5d0-1.5d0*chi(j))
+						(local_M(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+						(local_littlehupup(1,2)*local_J(j)*onethird)*(1.5d0-1.5d0*chi(j))
                        local_dLdE(j,1,2) = local_dLdE(j,1,2) + &
                             (local_dMdE(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
                             (local_littlehupup(1,2)*local_dJdE(j)*onethird)*(1.5d0-1.5d0*chi(j))
                        local_dLdF(j,1,2) = local_dLdF(j,1,2) + &
                             (local_dMdF(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
                             (local_littlehupup(1,2)*local_dJdF(j)*onethird)*(1.5d0-1.5d0*chi(j))
-
+	                    
+	                   if ( i.EQ. 2) then 
+						   local_Lbar(j,1,2) = local_Lbar(j,1,2) + &
+								(local_Mbar(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+								(local_littlehupup(1,2)*local_Jbar(j)*onethird)*(1.5d0-1.5d0*chi(j))
+	                       local_dLbardE(j,1,2) = local_dLbardE(j,1,2) + &
+	                            (local_dMbardE(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+	                            (local_littlehupup(1,2)*local_dJbardE(j)*onethird)*(1.5d0-1.5d0*chi(j))
+	                       local_dLbardF(j,1,2) = local_dLbardF(j,1,2) + &
+	                            (local_dMbardF(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+	                            (local_littlehupup(1,2)*local_dJbardF(j)*onethird)*(1.5d0-1.5d0*chi(j))
+						endif 
+						
                        local_L(j,2,1) = local_L(j,2,1) + &
-                            (local_M(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
-                            (local_littlehupup(2,1)*local_J(j)*onethird)*(1.5d0-1.5d0*chi(j))
+						(local_M(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+						(local_littlehupup(2,1)*local_J(j)*onethird)*(1.5d0-1.5d0*chi(j))
+						
                        local_dLdE(j,2,1) = local_dLdE(j,2,1) + &
                             (local_dMdE(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
                             (local_littlehupup(2,1)*local_dJdE(j)*onethird)*(1.5d0-1.5d0*chi(j))
                        local_dLdF(j,2,1) = local_dLdF(j,2,1) + &
                             (local_dMdF(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
                             (local_littlehupup(2,1)*local_dJdF(j)*onethird)*(1.5d0-1.5d0*chi(j))
-
+                       if ( i .EQ. 2) then 
+	                       local_Lbar(j,2,1) = local_Lbar(j,2,1) + &
+							(local_Mbar(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+							(local_littlehupup(2,1)*local_Jbar(j)*onethird)*(1.5d0-1.5d0*chi(j))
+	                       local_dLbardE(j,2,1) = local_dLbardE(j,2,1) + &
+	                            (local_dMbardE(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+	                            (local_littlehupup(2,1)*local_dJbardE(j)*onethird)*(1.5d0-1.5d0*chi(j))
+	                       local_dLbardF(j,2,1) = local_dLbardF(j,2,1) + &
+	                            (local_dMbardF(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+	                            (local_littlehupup(2,1)*local_dJbardF(j)*onethird)*(1.5d0-1.5d0*chi(j))
+					   endif 
+						
                        local_L(j,2,2) = local_L(j,2,2) + &
                             (local_M(ii,jj)*local_littleh(2,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
                             (local_littlehupup(2,2)*local_J(j)*onethird)*(1.5d0-1.5d0*chi(j))
@@ -457,41 +539,95 @@ subroutine M1_implicitstep(dts,implicit_factor)
                        local_dLdF(j,2,2) = local_dLdF(j,2,2) + &
                             (local_dMdF(ii,jj)*local_littleh(2,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
                             (local_littlehupup(2,2)*local_dJdF(j)*onethird)*(1.5d0-1.5d0*chi(j))
+                       if ( i .EQ. 2) then 
+						   local_Lbar(j,2,2) = local_Lbar(j,2,2) + &
+                            (local_Mbar(ii,jj)*local_littleh(2,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+                            (local_littlehupup(2,2)*local_Jbar(j)*onethird)*(1.5d0-1.5d0*chi(j))
+	                       local_dLbardE(j,2,2) = local_dLbardE(j,2,2) + &
+	                            (local_dMbardE(ii,jj)*local_littleh(2,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+	                            (local_littlehupup(2,2)*local_dJbardE(j)*onethird)*(1.5d0-1.5d0*chi(j))
+	                       local_dLbardF(j,2,2) = local_dLbardF(j,2,2) + &
+	                            (local_dMbardF(ii,jj)*local_littleh(2,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+	                            (local_littlehupup(2,2)*local_dJbardF(j)*onethird)*(1.5d0-1.5d0*chi(j))
+                       endif
+                       
                     enddo
                  enddo
 
                  local_Hdown(j,1) = sum(local_H(j,:)*local_littlehdowndown(1,:))
                  local_dHdowndE(j,1) = sum(local_dHdE(j,:)*local_littlehdowndown(1,:))
                  local_dHdowndF(j,1) = sum(local_dHdF(j,:)*local_littlehdowndown(1,:))
+                 if (i.EQ.2) then
+					 local_Hdownbar(j,1) = sum(local_Hbar(j,:)*local_littlehdowndown(1,:))
+	                 local_dHdownbardE(j,1) = sum(local_dHbardE(j,:)*local_littlehdowndown(1,:))
+	                 local_dHdownbardF(j,1) = sum(local_dHbardF(j,:)*local_littlehdowndown(1,:))
+				 endif
 
                  local_Hdown(j,2) = sum(local_H(j,:)*local_littlehdowndown(2,:))
                  local_dHdowndE(j,2) = sum(local_dHdE(j,:)*local_littlehdowndown(2,:))
                  local_dHdowndF(j,2) = sum(local_dHdF(j,:)*local_littlehdowndown(2,:))
+				  if ( i.EQ. 2) then 
+				     local_Hdownbar(j,2) = sum(local_Hbar(j,:)*local_littlehdowndown(2,:))
+	                 local_dHdownbardE(j,2) = sum(local_dHbardE(j,:)*local_littlehdowndown(2,:))
+	                 local_dHdownbardF(j,2) = sum(local_dHbardF(j,:)*local_littlehdowndown(2,:))
+                 endif
 
                  !L^a_b tilde as in Shibata et al. 2011
                  local_Ltilde(j,1,1) = -local_L(j,1,1)*alp2 - local_J(j)*local_littleh(1,1)*onethird
                  local_dLtildedE(j,1,1) = -local_dLdE(j,1,1)*alp2 - local_dJdE(j)*local_littleh(1,1)*onethird
                  local_dLtildedF(j,1,1) = -local_dLdF(j,1,1)*alp2 - local_dJdF(j)*local_littleh(1,1)*onethird
-
+                 if (i.EQ. 2) then 
+					 local_Ltildebar(j,1,1) = -local_Lbar(j,1,1)*alp2 - local_Jbar(j)*local_littleh(1,1)*onethird
+	                 local_dLtildebardE(j,1,1) = -local_dLbardE(j,1,1)*alp2 &
+												 - local_dJbardE(j)*local_littleh(1,1)*onethird
+	                 local_dLtildebardF(j,1,1) = -local_dLbardF(j,1,1)*alp2 &
+												 - local_dJbardF(j)*local_littleh(1,1)*onethird
+				 endif
+				 
                  local_Ltilde(j,1,2) = local_L(j,1,2)*X2 - local_J(j)*local_littleh(1,2)*onethird
                  local_dLtildedE(j,1,2) = local_dLdE(j,1,2)*X2 - local_dJdE(j)*local_littleh(1,2)*onethird
                  local_dLtildedF(j,1,2) = local_dLdF(j,1,2)*X2 - local_dJdF(j)*local_littleh(1,2)*onethird
+				 if ( i.EQ.2) then 
+					local_Ltildebar(j,1,2) = local_Lbar(j,1,2)*X2 - local_Jbar(j)*local_littleh(1,2)*onethird
+	                 local_dLtildebardE(j,1,2) = local_dLbardE(j,1,2)*X2 &
+												- local_dJbardE(j)*local_littleh(1,2)*onethird
+	                 local_dLtildebardF(j,1,2) = local_dLbardF(j,1,2)*X2 &
+												- local_dJbardF(j)*local_littleh(1,2)*onethird
+				 endif
 
                  local_Ltilde(j,2,1) = -local_L(j,2,1)*alp2 - local_J(j)*local_littleh(2,1)*onethird
                  local_dLtildedE(j,2,1) = -local_dLdE(j,2,1)*alp2 - local_dJdE(j)*local_littleh(2,1)*onethird
                  local_dLtildedF(j,2,1) = -local_dLdF(j,2,1)*alp2 - local_dJdF(j)*local_littleh(2,1)*onethird
+                 if (i.EQ.2) then 
+                     local_Ltildebar(j,2,1) = -local_Lbar(j,2,1)*alp2 - local_Jbar(j)*local_littleh(2,1)*onethird
+	                 local_dLtildebardE(j,2,1) = -local_dLbardE(j,2,1)*alp2 &
+													- local_dJbardE(j)*local_littleh(2,1)*onethird
+	                 local_dLtildebardF(j,2,1) = -local_dLbardF(j,2,1)*alp2 &
+												- local_dJbardF(j)*local_littleh(2,1)*onethird
+				 endif
 
                  local_Ltilde(j,2,2) = local_L(j,2,2)*X2 - local_J(j)*local_littleh(2,2)*onethird
                  local_dLtildedE(j,2,2) = local_dLdE(j,2,2)*X2 - local_dJdE(j)*local_littleh(2,2)*onethird
                  local_dLtildedF(j,2,2) = local_dLdF(j,2,2)*X2 - local_dJdF(j)*local_littleh(2,2)*onethird
+                 if(i.EQ.2) then 
+                     local_Ltildebar(j,2,2) = local_Lbar(j,2,2)*X2 - local_Jbar(j)*local_littleh(2,2)*onethird
+	                 local_dLtildebardE(j,2,2) = local_dLbardE(j,2,2)*X2 &
+												- local_dJbardE(j)*local_littleh(2,2)*onethird
+	                 local_dLtildebardF(j,2,2) = local_dLbardF(j,2,2)*X2 &
+												- local_dJbardF(j)*local_littleh(2,2)*onethird
+                 endif
 
               enddo
               
            endif
 
            !ep-annihilation for nux only
-           if (include_epannihil_kernels.and.i.eq.3) then
-              if (i.ne.3) stop "check update_eas to see if all kernels are getting interpolated i.ne.3 is highly experimental"
+!~            if ((include_epannihil_kernels .AND. i.eq.3 ) &
+!~ 				.or.(include_bremsstrahlung_kernels .AND. &
+!~ 				( i.NE. 2))) then !.AND. i.NE.2)) then
+           if ((include_epannihil_kernels.or.include_bremsstrahlung_kernels ) .AND. i.eq.3  &
+				) then
+!~               if (i.ne.3) stop "check update_eas to see if all kernels are getting interpolated i.ne.3 is highly experimental"
 
               do j=1,number_groups !\omega
                  do j_prime=1,number_groups !\omega^\prime, integrate over this
@@ -523,11 +659,15 @@ subroutine M1_implicitstep(dts,implicit_factor)
                     nucubed = M1_moment_to_distro_inverse(j) 
                     nucubedprime = M1_moment_to_distro_inverse(j_prime)
 
-                    R0pro = 0.5d0*epannihil(k,i,j,j_prime,1)
-                    R0ann = 0.5d0*epannihil(k,i,j,j_prime,2)
+                    R0pro = 0.5d0*(epannihil(k,i,j,j_prime,1) &
+                                + bremsstrahlung(k,i,j,j_prime,1))
+                    R0ann = 0.5d0*(epannihil(k,i,j,j_prime,2) &
+                                + bremsstrahlung(k,i,j,j_prime,2))
 
-                    R1pro = 1.5d0*epannihil(k,i,j,j_prime,3)
-                    R1ann = 1.5d0*epannihil(k,i,j,j_prime,4)
+                    R1pro = 1.5d0*(epannihil(k,i,j,j_prime,3) &
+                                - 1.0d0 /9.0d0 *bremsstrahlung(k,i,j,j_prime,1))
+                    R1ann = 1.5d0*(epannihil(k,i,j,j_prime,4) &
+                                - 1.0d0 /9.0d0 *bremsstrahlung(k,i,j,j_prime,2))
 
                     if (R0pro.lt.0.0d0) stop "R0pro should not be less than 0"
                     if (R0ann.lt.0.0d0) stop "R0ann should not be less than 0"
@@ -544,7 +684,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
 
                     RF(j) = RF(j) + epannihil_temp
                     epannihil_sourceterms(j) = epannihil_sourceterms(j) - epannihil_temp
-
+				
                     !dStdE
                     NL_jacobian(j,j) = NL_jacobian(j,j) - species_factor*implicit_factor*dts*alp2*4.0d0*pi*( - &
                          (local_dJdE(j)*local_uup(1) + local_dHdE(j,1))* &
@@ -610,6 +750,8 @@ subroutine M1_implicitstep(dts,implicit_factor)
               enddo
               
            endif
+!~            if (include_bremsstrahlung_kernels .AND. (i.EQ.2) .AND. (bounce .EQV. .FALSE.)) then
+		
 
            !implicit scattering
            if (include_Ielectron_imp) then
@@ -1028,7 +1170,8 @@ subroutine M1_implicitstep(dts,implicit_factor)
            !groups is large
            new_NL_jacobian = 0.0d0
            
-           if (include_Ielectron_imp.or.include_energycoupling_imp.or.include_epannihil_kernels) then
+           if (include_Ielectron_imp.or.include_energycoupling_imp.or.include_epannihil_kernels&
+			.or.include_bremsstrahlung_kernels) then
               do j=1,2*number_groups
                  do j_prime=1,2*number_groups
                     new_NL_jacobian(j,j_prime) = sum(inverse(j,:)*NL_jacobian(:,j_prime))
@@ -1158,7 +1301,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
                     !here) Solution, make energy coupling term implicit.
                     if (j.le.3) then
 
-                       !first time in here, try making energy coupling implcit
+                       !first time in here, try making energy coupling implicit
                        if (.not.trouble_brewing) then
                           sourceG(problem_zone,3) = q_M1_old(k,i,problem_zone,1) + &
                                B_M1(k,i,j,1) + D_M1(k,i,j,1)
@@ -1182,6 +1325,10 @@ subroutine M1_implicitstep(dts,implicit_factor)
                        if (M1en_Exp_term(j).lt.0.0d0) then 
                           q_M1_old(k,i,j,1) = 2.0d0*abs(M1en_Exp_term(j))
                        endif
+!~ 					   sourceG(problem_zone,3) = q_M1_old(k,i,problem_zone,1) + &
+!~ 						   D_M1(k,i,j,2)
+!~ 					   sourceG(problem_zone,1) = sourceG(problem_zone,1) - &
+!~ 						   B_M1(k,i,problem_zone,1)/q_M1_old(k,i,problem_zone,1)
                        sourceG(j,3) = M1en_Exp_term(j) + q_M1_old(k,i,j,1)                       
                        !be wary of this, ensure energy conservation is not too violated
 
@@ -1198,10 +1345,26 @@ subroutine M1_implicitstep(dts,implicit_factor)
 
            if (count.gt.90) then
               write(*,*) k,count, maxval(abs(RF)),maxloc(abs(RF))
-              write(*,*) RF(14)*NLsolve_x(14),RF(32)*NLsolve_x(32)
-              write(*,*) RF
-              write(*,*) NLsolve_x
+!~               write(*,*) RF(14)*NLsolve_x(14),RF(32)*NLsolve_x(32)
+!~               write(*,*) RF
+              write(*,*)
+!~               write(*,*) NLsolve_x(14), minval(NLsolve_x)
+              write(*,*)
+!~               write(*,*) epannihil_sourceterms(14)
+!~               write(*,*) ies_sourceterms(14)
+              write(*,*) maxval(abs(RF))
+              write(*,*) " count > 90 " 
+              write(*,*)
            endif
+           
+!~            if (count .GT. 0) then 
+!~ 	           write(*,*) count, i
+!~ 	          write(*,*) epannihil_sourceterms(2),epannihil_sourceterms(14),epannihil_sourceterms(17)
+!~               write(*,*) ies_sourceterms(2),ies_sourceterms(14),ies_sourceterms(17)
+!~               write(*,*) NLsolve_x(2),NLsolve_x(14),NLsolve_x(17)
+!~               write(*,*) 
+!~               if (i.EQ. 3 .AND. count .GT. 3) stop
+!~            endif
 
            if (maxval(abs(RF)).lt.1.0d-7) then
               !we have our solution
@@ -1232,8 +1395,8 @@ subroutine M1_implicitstep(dts,implicit_factor)
            if (count.gt.100.and.maxval(abs(RF)).lt.1.0d-5) then
               write(*,*) "warning, low tolerance after 100 iterations", k,nt,i
               stillneedconvergence = .false.
-           else if (count.gt.100.and.maxval(abs(RF)).gt.1.0d-5) then
-              write(*,*) "warning, no tolerance after 100 iterations", k
+           else if (count.gt.150.and.maxval(abs(RF)).gt.1.0d-5) then
+              write(*,*) "warning, no tolerance after 100 iterations", k,i,maxval(abs(RF))
               stop
 
               !it could be that the explicit flux calculation is
@@ -1309,7 +1472,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
            if (include_Ielectron_imp.or.include_Ielectron_exp) then
               Stnalpha = Stnalpha - onealp*ies_sourceterm(k,i,j,1)
            endif
-           if (include_epannihil_kernels) then
+           if (include_epannihil_kernels.or.include_bremsstrahlung_kernels) then
               Stnalpha = Stnalpha - onealp*epannihil_sourceterm(k,i,j,1)
            endif
            Stnalpha = Stnalpha - Stzone*onealp
@@ -1321,7 +1484,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
            if (include_Ielectron_imp.or.include_Ielectron_exp) then
               Sr = Sr + ies_sourceterm(k,i,j,2)
            endif
-           if (include_epannihil_kernels) then
+           if (include_epannihil_kernels.or.include_bremsstrahlung_kernels) then
               Sr = Sr + epannihil_sourceterm(k,i,j,2)
            endif
            Sr = Sr + Srzone

@@ -8,14 +8,15 @@ subroutine M1_init
        temp_mev_to_kelvin,number_species,volume,pi,M1_moment_to_distro,clite, &
        hbarc_mevcm,M1_testcase_number,v_order,include_nes_kernels, &
        M1_moment_to_distro_inverse,nulib_kernel_gf,number_species_to_evolve, &
-       include_epannihil_kernels,M1_extractradii,M1_iextractradii
+       include_epannihil_kernels,M1_extractradii,M1_iextractradii, &
+       include_bremsstrahlung_kernels
   use nulibtable
 
   implicit none
 
   integer i
 
-  call nulibtable_reader(opacity_table,include_nes_kernels,include_epannihil_kernels)
+  call nulibtable_reader(opacity_table,include_nes_kernels,include_epannihil_kernels,include_bremsstrahlung_kernels)
   
   !change units of emissivities, opacities, energies and inverse
   !energies to code units, then we only have to do it once these are
@@ -43,6 +44,9 @@ subroutine M1_init
   if (include_epannihil_kernels) then
      nulibtable_epannihiltable_Phi0 = log10(10.0d0**nulibtable_epannihiltable_Phi0*nulib_kernel_gf)
      !Phi1 is stored as the ratio of Phi1/Phi0, so no log, no units
+  endif
+    if (include_bremsstrahlung_kernels) then
+     nulibtable_bremsstrahlung_Phi0 = log10(10.0d0**nulibtable_bremsstrahlung_Phi0*nulib_kernel_gf)
   endif
 
   !convert energies to reduced units to save time, note nulib_ewidth is NOT converted
