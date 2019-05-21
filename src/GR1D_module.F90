@@ -162,6 +162,7 @@ module GR1D_module
   integer :: number_groups
   integer :: number_eas
   logical :: include_epannihil_kernels
+  logical :: include_bremsstrahlung_kernels
   logical :: include_nes_kernels
   logical :: include_Ielectron_exp
   logical :: include_Ielectron_imp
@@ -332,6 +333,14 @@ module GR1D_module
   !track of
   !source term
   !from epannihil for
+  !matter
+  real*8,allocatable,save :: bremsstrahlung(:,:,:,:,:) !kernals for
+  !brem zeroth
+  !and first moment
+  real*8,allocatable,save :: bremsstrahlung_sourceterm(:,:,:,:) !for keeping
+  !track of
+  !source term
+  !from brem for
   !matter
   real*8,allocatable,save :: M1_matter_source(:,:) !source terms
   !for matter

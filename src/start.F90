@@ -58,8 +58,8 @@ subroutine start
   endif
 
   ! wipe output directory
-  rmstring="rm -rf "//trim(adjustl(outdir))//"/*"
-  call system(rmstring)
+!~   rmstring="rm -rf "//trim(adjustl(outdir))//"/*"
+!~   call system(rmstring)
   ! copy parameter file
   cpstring="cp parameters "//trim(adjustl(outdir))
   call system(cpstring)

@@ -150,6 +150,7 @@ subroutine input_parser
      call get_integer_parameter('number_groups',number_groups)
      call get_integer_parameter('number_eas',number_eas)
      call get_logical_parameter('include_epannihil_kernels',include_epannihil_kernels)
+     call get_logical_parameter('include_bremsstrahlung_kernels',include_bremsstrahlung_kernels)
      call get_logical_parameter('include_nes_kernels',include_nes_kernels)
      call get_integer_parameter('nes_evolution_type',tempint)
      if (tempint.eq.0) then
@@ -212,7 +213,7 @@ subroutine input_parser
            write(*,*) "Initial M1 inelastic electron scattering method not the same as specified in main parameters"
            stop
         endif
-        if (M1_phase1_ies_way.eq.2.and.(include_Ielectron_exp.or..not.include_Ielectron_exp)) then
+        if (M1_phase1_ies_way.eq.2.and.(include_Ielectron_exp.or..not.include_Ielectron_imp)) then
            write(*,*) "Initial M1 inelastic electron scattering method not the same as specified in main parameters"
            stop
         endif
