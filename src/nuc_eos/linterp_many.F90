@@ -44,8 +44,12 @@
       real*8 dx,dy,dz,dxi,dyi,dzi,dxyi,dxzi,dyzi,dxyzi
       integer n,ix,iy,iz
 
-      IF (kt .GT. ktx)  STOP'***KTX**'
-!
+
+      IF (kt .GT. ktx)  then
+         write(*,*) "Error in kt",kt
+         STOP
+      endif
+         !
 !
 !------  determine spacing parameters of (equidistant!!!) table
 !
