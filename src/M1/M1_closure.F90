@@ -98,6 +98,9 @@ subroutine M1_closure
      littlehupdown(1,2) = -udown(1)*invalp2*udown(2)
      littlehupdown(2,2) = W2 !1.0d0+udown(2)*udown(2)*invX2
 
+     q_M1m(k,:,:,3,1) = q_M1(k,:,:,3) 
+     q_M1p(k,:,:,3,1) = q_M1(k,:,:,3) 
+
      do h=1,3 !minus,center,plus
         do i=1,number_species_to_evolve
            do j=1,number_groups
@@ -105,7 +108,7 @@ subroutine M1_closure
               if (h.eq.1) then !minus state
                  oneM1en = q_M1m(k,i,j,1,1)/q_M1m(k,i,j,1,1)
                  oneM1flux = q_M1m(k,i,j,2,1)/q_M1m(k,i,j,1,1)
-                 oneM1eddy_guess = q_M1(k,i,j,3)
+                 oneM1eddy_guess = q_M1m(k,i,j,3,1)
               else if (h.eq.2) then !middle state
                  oneM1en = q_M1(k,i,j,1)/q_M1(k,i,j,1)
                  oneM1flux = q_M1(k,i,j,2)/q_M1(k,i,j,1)
@@ -113,7 +116,7 @@ subroutine M1_closure
               else if (h.eq.3) then !plus state
                  oneM1en = q_M1p(k,i,j,1,1)/q_M1p(k,i,j,1,1)
                  oneM1flux = q_M1p(k,i,j,2,1)/q_M1p(k,i,j,1,1)
-                 oneM1eddy_guess = q_M1(k,i,j,3)
+                 oneM1eddy_guess = q_M1p(k,i,j,3,1)
               endif
               
               err = 1.0d0
@@ -124,7 +127,11 @@ subroutine M1_closure
               Tupmunu(1,2) = oneM1flux*invX2*invalp
               Tupmunu(2,1) = Tupmunu(1,2)
 
-              do while (err>tol)
+!              do while (err>tol)
+!We have found that 4 iteration is enough to achieve the same accuracy
+!as err<tol in the neutrino quanties, but allows late time evolution
+!all the way to black holes more robustly
+              do while (count < 4)
                  count = count + 1
                  Tupmunu(2,2) = oneM1eddy_guess*oneM1en*invX2**2
 
