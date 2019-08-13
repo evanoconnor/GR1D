@@ -25,7 +25,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
   real*8 :: old_jacobian(2*number_groups,2*number_groups),old_RF(2*number_groups)
   real*8 :: inverse(2*number_groups,2*number_groups),det
   real*8 :: NLsolve_x(2*number_groups),oldx(2*number_groups)
-  real*8 :: pivot(2*number_groups)
+  integer :: pivot(2*number_groups)
   real*8 :: nucubed,nucubedprime,R0out,R0in,R1out,R1in,ies_temp,species_factor,ispecies_factor
   real*8 :: R0pro,R0ann,R1pro,R1ann,epannihil_temp
   real*8 :: ies_sourceterms(2*number_groups)
