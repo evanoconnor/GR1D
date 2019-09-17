@@ -211,11 +211,11 @@ subroutine M1_explicitterms(dts,implicit_factor)
            endif
 
            !actual speed
-           l_min(1) = (3.0d0*M1chi_space_minus(k+1)-1.0d0)*0.5d0*l_min_thin(1) + &
-                (1.0d0 - M1chi_space_minus(k+1))*1.5d0*l_min_thick(1)
+           l_min(1) = (3.0d0*M1chi_space(k+1)-1.0d0)*0.5d0*l_min_thin(1) + &
+                (1.0d0 - M1chi_space(k+1))*1.5d0*l_min_thick(1)
 
-           l_max(1) = (3.0d0*M1chi_space_minus(k+1)-1.0d0)*0.5d0*l_max_thin(1) + &
-                (1.0d0 - M1chi_space_minus(k+1))*1.5d0*l_max_thick(1)
+           l_max(1) = (3.0d0*M1chi_space(k+1)-1.0d0)*0.5d0*l_max_thin(1) + &
+                (1.0d0 - M1chi_space(k+1))*1.5d0*l_max_thick(1)
 
            !plus interface (k zone)
            !thin limit:
@@ -274,10 +274,10 @@ subroutine M1_explicitterms(dts,implicit_factor)
            endif
            
            !actualy speed
-           l_min(2) = (3.0d0*M1chi_space_plus(k)-1.0d0)*0.5d0*l_min_thin(2) + &
-                (1.0d0 - M1chi_space_plus(k))*1.5d0*l_min_thick(2)
-           l_max(2) = (3.0d0*M1chi_space_plus(k)-1.0d0)*0.5d0*l_max_thin(2) + &
-                (1.0d0 - M1chi_space_plus(k))*1.5d0*l_max_thick(2)
+           l_min(2) = (3.0d0*M1chi_space(k)-1.0d0)*0.5d0*l_min_thin(2) + &
+                (1.0d0 - M1chi_space(k))*1.5d0*l_min_thick(2)
+           l_max(2) = (3.0d0*M1chi_space(k)-1.0d0)*0.5d0*l_max_thin(2) + &
+                (1.0d0 - M1chi_space(k))*1.5d0*l_max_thick(2)
 
 
            !check for NaNs

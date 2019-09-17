@@ -521,11 +521,12 @@ subroutine output_all(modeflag)
 
 
         scalars(1:nscalars0) = 0.0d0
-        nscalars = 4
+        nscalars = 5
         scalars(1) = total_net_heating/(luminosity(1)+luminosity(2))            
         scalars(2) = luminosity(1)+luminosity(2)
         scalars(3) = total_net_heating
         scalars(4) = total_mass_gain
+        scalars(5) = total_net_deintdt
         filename = trim(adjustl(outdir))//"/M1_net_heating.dat"
         call output_many_scalars(scalars,nscalars0,nscalars,filename)
         
