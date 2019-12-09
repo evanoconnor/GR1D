@@ -64,9 +64,12 @@ ifeq ($(HAVE_LEAK_ROS),1)
 	EXTRADEPS += leakage_rosswog/leakage_rosswog.a 
 endif	
 
-EXTRAINCS += -Inulibtable
-EXTRAOBJECTS += nulibtable/nulibtable.a
-EXTRADEPS += nulibtable/nulibtable.a
+ifndef NULIBDIR
+	NULIBDIR=nulibtable
+endif
+EXTRAINCS += -I$(NULIBDIR)
+EXTRAOBJECTS += $(NULIBDIR)/nulib.a
+EXTRADEPS += $(NULIBDIR)/nulib.a
 
 ifeq ($(HAVE_LAPACK),1)
 	EXTRAOBJECTS += $(LAPACKLIBS)
@@ -76,7 +79,7 @@ endif
 GR1D:  GR1D_module.o $(EXTRADEPS) $(OBJECTS)  
 	$(F90) $(LDFLAGS) -o ../GR1D $(OBJECTS) $(EXTRAOBJECTS)
 
-$(OBJECTS): %.o: %.F90 
+$(OBJECTS): %.o: %.F90
 	$(F90) $(F90FLAGS) $(DEFS) $(MODINC) $(EXTRAINCS) -c $< -o $@
 
 GR1D.o: GR1D_module.o
@@ -87,7 +90,7 @@ nuc_eos/nuc_eos.a: nuc_eos/*.F90 nuc_eos/*.f
 leakage_rosswog/leakage_rosswog.a: leakage_rosswog/leak_rosswog.F90
 	$(MAKE) -C leakage_rosswog
 
-nulibtable/nulibtable.a: nulibtable/*.F90
+nulibtable/nulib.a: nulibtable/*.F90
 	$(MAKE) -C nulibtable
 
 clean:

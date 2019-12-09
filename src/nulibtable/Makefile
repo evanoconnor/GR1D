@@ -10,13 +10,13 @@ NT_OBJECTS=$(NT_SOURCES:.F90=.o )
 EXTRAINCS = $(HDF5INCS)
 EXTRAOBJECTS = $(HDF5LIBS)
 
-all: nulibtable.a
+all: nulib.a
 
 $(NT_OBJECTS): %.o: %.F90 $(EXTRADEPS)
 	$(F90) $(F90FLAGS) $(DEFS) $(MODINC) $(EXTRAINCS) -c $< -o $@
 
-nulibtable.a: $(NT_OBJECTS)
-	ar r nulibtable.a *.o
+nulib.a: $(NT_OBJECTS)
+	ar r nulib.a *.o
 
 clean:
 	rm -rf *.o
