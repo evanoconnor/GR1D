@@ -43,6 +43,7 @@ subroutine collapse
   mindx = grid_custom_dx1*length_gf !1 km
   
   write(*,*) "Setting up grid: ", trim(adjustl(gridtype))
+  
   call grid(xmin,xmax,mindx)
   
   if(profile_type.eq.1) then

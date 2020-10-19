@@ -1,0 +1,31 @@
+Binary file GR1D_module.o matches
+Binary file initialize_vars.o matches
+Binary file M1/M1_closure.o matches
+Binary file M1/M1_reconstruct.o matches
+Binary file M1/M1_implicitstep.o matches
+M1/M1_control.F90:     number_species_to_evolve = M1_phase1_ns
+M1/M1_control.F90:     number_species_to_evolve = M1_phase2_ns
+M1/M1_control.F90:     number_species_to_evolve = M1_phase3_ns
+Binary file M1/M1_updateeas.o matches
+Binary file M1/M1_init.o matches
+M1/M1_closure.F90:        do i=1,number_species_to_evolve
+Binary file M1/M1_control.o matches
+M1/M1_explicitterms.F90:     do i=1,number_species_to_evolve
+M1/M1_explicitterms.F90:        do i=1,number_species_to_evolve
+M1/M1_explicitterms.F90:        do i=1,number_species_to_evolve
+Binary file M1/M1_testcases.o matches
+M1/M1_reconstruct.F90:     do i=1,number_species_to_evolve
+Binary file M1/M1_explicitterms.o matches
+M1/M1_implicitstep.F90:     do i=1,number_species_to_evolve
+M1/M1_init.F90:       M1_moment_to_distro_inverse,nulib_kernel_gf,number_species_to_evolve, &
+M1/M1_init.F90:  if (number_species_to_evolve.eq.-1) then
+M1/M1_init.F90:     number_species_to_evolve = number_species
+M1/M1_testcases.F90:     number_species_to_evolve = 1
+M1/M1_testcases.F90:     number_species_to_evolve = 1
+M1/M1_testcases.F90:     number_species_to_evolve = 1
+M1/M1_updateeas.F90:           if (number_species_to_evolve.eq.1) then
+M1/M1_updateeas.F90:           else if (number_species_to_evolve.eq.3) then
+M1/M1_updateeas.F90:              if (number_species_to_evolve.eq.1) then
+M1/M1_updateeas.F90:              else if (number_species_to_evolve.eq.3) then
+initialize_vars.F90:  number_species_to_evolve = -1
+GR1D_module.F90:  integer :: number_species_to_evolve

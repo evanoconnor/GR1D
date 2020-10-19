@@ -355,10 +355,10 @@ subroutine Step(dts)
     endif
     C_M1 = -flux_M1_energy !explicit momentum flux, on the RHS now 
     D_M1 = flux_M1_scatter !explicit scattering, stays in the RHS
-
+	q_M1_old = q_M1
     !2. do implicit step for RHS source terms and calculate matter source terms
     call M1_implicitstep(dts,implicit_factor)
-
+!~ 	stop
     !3. update matter conservatively
     if (do_hydro.or.(M1_testcase_number.eq.1.and.time.gt.0.0012d0)) then
        call M1_conservativeupdate(dts)
