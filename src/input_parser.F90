@@ -151,6 +151,11 @@ subroutine input_parser
      call get_integer_parameter('number_eas',number_eas)
      call get_logical_parameter('include_epannihil_kernels',include_epannihil_kernels)
      call get_logical_parameter('include_bremsstrahlung_kernels',include_bremsstrahlung_kernels)
+     call get_logical_parameter('include_gang_kernels',include_gang_kernels)
+     if ( include_bremsstrahlung_kernels .AND. include_gang_kernels ) then 
+		write(*,*) "Need to chose which bremsstrahlung !"
+		stop
+     endif 
      call get_logical_parameter('include_nes_kernels',include_nes_kernels)
      call get_integer_parameter('nes_evolution_type',tempint)
      if (tempint.eq.0) then

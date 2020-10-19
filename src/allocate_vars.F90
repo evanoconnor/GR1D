@@ -86,9 +86,9 @@ subroutine allocate_vars
   allocate(eas(n1,number_species,number_groups,number_eas)) !emissivity,absorpive crosssection, scattering crosssection
   allocate(ies(n1,number_species,number_groups,number_groups,2)) ! scattering kernel \phis
   allocate(ies_sourceterm(n1,number_species,number_groups,2)) !source terms for matter
-  allocate(epannihil(n1,number_species,number_groups,number_groups,4)) ! scattering kernel \phis
+  allocate(epannihil(n1,number_species,number_groups,number_groups,4)) ! epan kernel \phis
   allocate(epannihil_sourceterm(n1,number_species,number_groups,2)) !source terms for matter
-  allocate(bremsstrahlung(n1,number_species,number_groups,number_groups,2)) ! scattering kernel \phis
+  allocate(bremsstrahlung(n1,number_species,number_groups,number_groups,2)) ! brem kernel \phi 
   allocate(q_M1(n1,number_species,number_groups,3)) !conserved variables
   allocate(q_M1_prev(n1,number_species,number_groups,3)) !conserved variables
   allocate(q_M1p(n1,number_species,number_groups,3,2)) !conserved variables

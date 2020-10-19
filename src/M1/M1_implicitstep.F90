@@ -30,6 +30,8 @@ subroutine M1_implicitstep(dts,implicit_factor)
   real*8 :: R0pro,R0ann,R1pro,R1ann,epannihil_temp
   real*8 :: ies_sourceterms(2*number_groups)
   real*8 :: epannihil_sourceterms(2*number_groups)
+  real*8 :: epannihil_production(2*number_groups),epannihil_production_2(2*number_groups)
+  real*8 :: epannihil_annihilation(2*number_groups),epannihil_annihilation_2(2*number_groups)
   real*8 :: bremsstrahlung_sourceterms(2*number_groups)
   real*8 :: local_M(2,2),local_J(number_groups),local_H(number_groups,2)
   real*8 :: local_Mbar(2,2),local_Jbar(number_groups),local_Hbar(number_groups,2)
@@ -103,6 +105,11 @@ subroutine M1_implicitstep(dts,implicit_factor)
 
   nothappenyet1 = .true.
   nothappenyet2 = .true.
+  
+ 
+
+
+
   !$OMP PARALLEL DO PRIVATE(i,j,div_v,dvdt,M1en_Exp_term,M1flux_Exp_term,eddy,eddytt, &
   !$OMP eddyff,chi,heatterm,heattermff,NLsolve_x,sourceS,sourceG,h,invalp,invalp2, &
   !$OMP alp2,onealp,invX,invX2,X2,oneX,W2,oneW,v2,onev,invr,invr2,local_u,local_uup, &
@@ -125,6 +132,9 @@ subroutine M1_implicitstep(dts,implicit_factor)
   !$OMP new_NL_jacobian,new_RF,old_jacobian,oldx,myloc,problem_fixing,problem_zone, &
   !$OMP maxRF,Sr,Stnalpha,Stnum,oneM1en,oneM1flux,oneeddy,Stzone,Srzone,sign_one,pivot, &
   !$OMP info,trouble_brewing,changedtwice,species_factor,ispecies_factor)
+  
+  
+
   do k=ghosts1+1,M1_imaxradii
      do i=1,number_species_to_evolve
         
@@ -344,10 +354,14 @@ subroutine M1_implicitstep(dts,implicit_factor)
            epannihil_sourceterms = 0.0d0
            RF = 0.0d0
            NL_jacobian = 0.0d0       
-
-           !ep annihilation or Ielectron scattering determine fluid terms
+           epannihil_production = 0.0d0
+           epannihil_annihilation = 0.0d0
+           epannihil_production_2 = 0.0d0
+           epannihil_annihilation_2 =0.0d0   
+        !ep annihilation or Ielectron scattering determine fluid terms
         if ((include_epannihil_kernels.and.i.eq.3).or.include_Ielectron_imp &
-            .or. (include_bremsstrahlung_kernels.and.i.eq.3)) then
+            .or. (include_bremsstrahlung_kernels.and.i.eq.3) &
+            .or. (include_gang_kernels.and.i.eq.3)) then
               local_M = 0.0d0
               local_J = 0.0d0
               local_H = 0.0d0
@@ -625,10 +639,11 @@ subroutine M1_implicitstep(dts,implicit_factor)
 !~            if ((include_epannihil_kernels .AND. i.eq.3 ) &
 !~ 				.or.(include_bremsstrahlung_kernels .AND. &
 !~ 				( i.NE. 2))) then !.AND. i.NE.2)) then
-           if ((include_epannihil_kernels.or.include_bremsstrahlung_kernels ) .AND. i.eq.3  &
+           if ((include_epannihil_kernels.or.include_bremsstrahlung_kernels .or. & 
+				include_gang_kernels ) .AND. i.eq.3  &
 				) then
 !~               if (i.ne.3) stop "check update_eas to see if all kernels are getting interpolated i.ne.3 is highly experimental"
-
+             
               do j=1,number_groups !\omega
                  do j_prime=1,number_groups !\omega^\prime, integrate over this
 
@@ -658,16 +673,17 @@ subroutine M1_implicitstep(dts,implicit_factor)
 
                     nucubed = M1_moment_to_distro_inverse(j) 
                     nucubedprime = M1_moment_to_distro_inverse(j_prime)
-
+                    
                     R0pro = 0.5d0*(epannihil(k,i,j,j_prime,1) &
-                                + bremsstrahlung(k,i,j,j_prime,1))
+                                + bremsstrahlung(k,i,j,j_prime,1) )
                     R0ann = 0.5d0*(epannihil(k,i,j,j_prime,2) &
-                                + bremsstrahlung(k,i,j,j_prime,2))
+                                + bremsstrahlung(k,i,j,j_prime,2) )
 
                     R1pro = 1.5d0*(epannihil(k,i,j,j_prime,3) &
                                 - 1.0d0 /9.0d0 *bremsstrahlung(k,i,j,j_prime,1))
                     R1ann = 1.5d0*(epannihil(k,i,j,j_prime,4) &
                                 - 1.0d0 /9.0d0 *bremsstrahlung(k,i,j,j_prime,2))
+                    
 
                     if (R0pro.lt.0.0d0) stop "R0pro should not be less than 0"
                     if (R0ann.lt.0.0d0) stop "R0ann should not be less than 0"
@@ -681,10 +697,33 @@ subroutine M1_implicitstep(dts,implicit_factor)
                          sum(local_Ltilde(j,1,:)*local_Hbar(j_prime,:)))*(R1pro-R1ann) - &
                          (local_J(j)*local_uup(1)+local_H(j,1))*local_Jbar(j_prime)*R0ann)* &
                          nulibtable_inv_energies(j_prime)
+                        
+                   epannihil_production(j) = epannihil_production(j) &
+                                           - 4.0d0*pi*onealp* &
+                                            ((local_J(j)-nucubed)*local_uup(1) )* &
+                                            (nucubedprime-local_Jbar(j_prime))*R0pro * &
+                                            nulibtable_inv_energies(j_prime)                                                   
+
+                   epannihil_annihilation(j) = epannihil_annihilation(j) - &
+                                                onealp*4.0d0*pi*&
+                                       (local_J(j)*local_uup(1))*local_Jbar(j_prime)*R0ann &
+                                        * nulibtable_inv_energies(j_prime) 
+                    
+                   epannihil_production_2(j) = epannihil_production_2(j) &
+                                           - 4.0d0*pi*onealp*&
+                                            R0pro*((local_J(j)-nucubed)*local_uup(1)) &
+                                            *nucubedprime* &
+                                            nulibtable_inv_energies(j_prime)
+
+                   epannihil_annihilation_2(j) = epannihil_annihilation_2(j) - &
+                                                onealp*4.0d0*pi*&
+                                                R0ann*((local_J(j)*local_uup(1))*nucubedprime) *&
+                                                 nulibtable_inv_energies(j_prime)
+            
 
                     RF(j) = RF(j) + epannihil_temp
                     epannihil_sourceterms(j) = epannihil_sourceterms(j) - epannihil_temp
-				
+
                     !dStdE
                     NL_jacobian(j,j) = NL_jacobian(j,j) - species_factor*implicit_factor*dts*alp2*4.0d0*pi*( - &
                          (local_dJdE(j)*local_uup(1) + local_dHdE(j,1))* &
@@ -745,6 +784,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
                          nulibtable_inv_energies(j_prime)
 
                  enddo
+           
                  epannihil_sourceterm(k,i,j,1) = epannihil_sourceterms(j)/(implicit_factor*dts*alp2)
                  epannihil_sourceterm(k,i,j,2) = epannihil_sourceterms(j+number_groups)/(implicit_factor*dts*X2)
               enddo
@@ -1171,7 +1211,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
            new_NL_jacobian = 0.0d0
            
            if (include_Ielectron_imp.or.include_energycoupling_imp.or.include_epannihil_kernels&
-			.or.include_bremsstrahlung_kernels) then
+			.or.include_bremsstrahlung_kernels.or.include_gang_kernels) then
               do j=1,2*number_groups
                  do j_prime=1,2*number_groups
                     new_NL_jacobian(j,j_prime) = sum(inverse(j,:)*NL_jacobian(:,j_prime))
@@ -1396,7 +1436,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
               write(*,*) "warning, low tolerance after 100 iterations", k,nt,i
               stillneedconvergence = .false.
            else if (count.gt.150.and.maxval(abs(RF)).gt.1.0d-5) then
-              write(*,*) "warning, no tolerance after 100 iterations", k,i,maxval(abs(RF))
+              write(*,*) "warning, no tolerance after 150 iterations,stopping", k,i,maxval(abs(RF))
               stop
 
               !it could be that the explicit flux calculation is
@@ -1472,7 +1512,8 @@ subroutine M1_implicitstep(dts,implicit_factor)
            if (include_Ielectron_imp.or.include_Ielectron_exp) then
               Stnalpha = Stnalpha - onealp*ies_sourceterm(k,i,j,1)
            endif
-           if (include_epannihil_kernels.or.include_bremsstrahlung_kernels) then
+           if (include_epannihil_kernels.or.include_bremsstrahlung_kernels&
+                .or.include_gang_kernels) then
               Stnalpha = Stnalpha - onealp*epannihil_sourceterm(k,i,j,1)
            endif
            Stnalpha = Stnalpha - Stzone*onealp
@@ -1484,7 +1525,8 @@ subroutine M1_implicitstep(dts,implicit_factor)
            if (include_Ielectron_imp.or.include_Ielectron_exp) then
               Sr = Sr + ies_sourceterm(k,i,j,2)
            endif
-           if (include_epannihil_kernels.or.include_bremsstrahlung_kernels) then
+           if (include_epannihil_kernels.or.include_bremsstrahlung_kernels&
+                .or.include_gang_kernels) then
               Sr = Sr + epannihil_sourceterm(k,i,j,2)
            endif
            Sr = Sr + Srzone

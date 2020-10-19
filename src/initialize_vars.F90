@@ -51,6 +51,7 @@ subroutine initialize_vars
   number_eas = 0
   include_epannihil_kernels = .false.
   include_bremsstrahlung_kernels = .false.
+  include_gang_kernels = .false.
   include_nes_kernels = .false.
   include_Ielectron_exp = .false.
   include_Ielectron_imp = .false.
@@ -224,7 +225,7 @@ subroutine initialize_arrays
   ies_sourceterm(:,:,:,:) = 0.0d0
   epannihil(:,:,:,:,:) = 0.0d0
   epannihil_sourceterm(:,:,:,:) = 0.0d0
-  bremsstrahlung(:,:,:,:,:) = 0.0d0
+  bremsstrahlung(:,:,:,:,:) = 0.0d0  
   q_M1(:,:,:,1) = 1.0d-100
   q_M1(:,:,:,2) = 1.0d-110
   q_M1(:,:,:,3) = 0.5

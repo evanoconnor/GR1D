@@ -12,6 +12,7 @@ module nulibtable
   real*8, allocatable,save :: nulibtable_logItemp(:)
   real*8, allocatable,save :: nulibtable_logIeta(:)
   real*8, allocatable,save :: nulibtable_logn_N(:)
+  real*8, allocatable,save :: nulibtable_logYe(:)
   
   
   real*8, allocatable,save :: nulibtable_energies(:)
@@ -34,6 +35,8 @@ module nulibtable
   real*8, allocatable,save :: nulibtable_epannihiltable_Phi1(:,:,:)
   
   real*8, allocatable,save :: nulibtable_bremsstrahlung_Phi0(:,:,:)
+  real*8, allocatable,save :: nulibtable_bremsstrahlung_gang_Phi0(:,:,:,:)
+!~   real*8, allocatable,save :: gang_table(:,:,:,:)
 
   integer :: nulibtable_nrho
   integer :: nulibtable_ntemp
@@ -42,7 +45,8 @@ module nulibtable
   integer :: nulibtable_nItemp
   integer :: nulibtable_nIeta
   integer :: nulibtable_nn_N
-  
+  integer :: nulibtable_nIYe
+
   real*8 :: nulibtable_logrho_min
   real*8 :: nulibtable_logrho_max
 
@@ -60,6 +64,9 @@ module nulibtable
   
   real*8 :: nulibtable_logn_N_max
   real*8 :: nulibtable_logn_N_min
+
+  real*8 :: nulibtable_logYe_max
+  real*8 :: nulibtable_logYe_min
 
   integer :: nulibtable_number_easvariables
 
@@ -720,6 +727,137 @@ subroutine nulibtable_bremsstrahlung_single_species_range_energy2(xtemp,xn_N, &
   if (ANY(eas <0.0d0)) then
     stop "nulib : eas_brem <0"
   endif
+
+   
   
 end subroutine nulibtable_bremsstrahlung_single_species_range_energy2
+  
+!this takes temp,n_N, and return gang bremsstrahlungation phi0 over energy (both nus) range for a single species
+subroutine nulibtable_bremsstrahlung_gang_single_species_range_energy2(xtemp,xn_N,xYe, &
+     lns,eas,eas_n1,eas_n2,eas_n3)
 
+  use nulibtable
+  implicit none
+
+  real*8, intent(in) :: xtemp, xn_N,xYe !inputs
+  real*8 :: xltemp, xln_N,xlYe !log versions
+  integer, intent(in) :: lns,eas_n1,eas_n2,eas_n3
+  real*8, intent(out) :: eas(eas_n1,eas_n2,eas_n3)
+  integer :: ing_this,ing_that
+  real*8 :: xeas(eas_n1*eas_n2*2)
+  integer :: index
+  real*8 :: energy_conversion = 1.60217733d-6*5.59424238d-55
+  integer :: startindex,endindex
+
+  if(size(eas,1).ne.nulibtable_number_groups) then
+     stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (1) is not commensurate with table"
+  endif  
+  if(size(eas,2).ne.nulibtable_number_groups) then
+     stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (2) is not commensurate with table"
+  endif
+  if(size(eas,3).ne.2) then
+     stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (3) is not commensurate with table"
+  endif
+
+  xltemp = log10(xtemp)
+  if (xltemp.lt.nulibtable_logItemp_min) stop "temp below nulib bremsstrahlung table minimum temp"
+  if (xltemp.gt.nulibtable_logItemp_max) stop "temp above nulib bremsstrahlung table maximum temp"  
+  
+  eas = 0.0d0
+  xln_N = log10(xn_N)
+  xlYe = log10(xYe)
+	
+
+  if (xln_N.lt.nulibtable_logn_N_min) stop "n_N below nulib bremsstrahlung table minimum n_N"
+  if (xln_N.gt.nulibtable_logn_N_max) stop "n_N above nulib bremsstrahlung table maximum n_N"
+
+  if (xlYe.gt.nulibtable_logYe_min) then 
+       write(*,*) xlYe,nulibtable_logYe_min  
+       stop "Ye below nulib bremsstrahlung table minimum Ye"
+  endif
+  if (xlYe.lt.nulibtable_logYe_max) then 
+       write(*,*) xlYe,nulibtable_logYe_max
+         stop "Ye above nulib bremsstrahlung table maximum Ye"
+  endif
+  startindex = (lns-1)*nulibtable_number_groups*nulibtable_number_groups*2+1
+  endindex = startindex + nulibtable_number_groups*nulibtable_number_groups*2 - 1
+!~         write(*,*) MAXVAL(nulibtable_bremsstrahlung_Phi0),MINVAL(nulibtable_bremsstrahlung_Phi0)
+  xeas = 0.0d0
+  call intp3d_many_mod(xltemp,xln_N,xlYe,xeas,nulibtable_bremsstrahlung_gang_Phi0(:,:,:,startindex:endindex), &
+       nulibtable_nItemp,nulibtable_nn_N,nulibtable_nIYe,eas_n1*eas_n2*2,&
+       nulibtable_logItemp,nulibtable_logn_N,nulibtable_logYe)
+       
+  index = 0
+  do ing_this=1,nulibtable_number_groups
+     do ing_that=1,nulibtable_number_groups
+                index = index + 1
+                eas(ing_this,ing_that,1) = eas(ing_this,ing_that,1) + &
+                                           10.0d0**xeas(index)
+                index = index + 1
+                eas(ing_this,ing_that,2) = eas(ing_this,ing_that,2) + &
+                                           10.0d0**xeas(index)
+
+     enddo
+  enddo
+
+
+  if (ANY(eas <0.0d0)) then
+    stop "nulib : eas_brem <0"
+  endif
+
+   
+  
+end subroutine nulibtable_bremsstrahlung_gang_single_species_range_energy2
+  
+!~ subroutine gang_table_range_energy(xtemp,xn_N,xYe, &
+!~  brem_array)
+	
+!~ 	use nulibtable
+	
+!~ 	implicit none
+	
+	
+!~ 	real*8, intent(in) :: xtemp,xn_N,xYe
+!~ 	real*8, intent(out) :: brem_array(nulibtable_number_groups,nulibtable_number_groups,2)
+	
+!~ 	integer :: i,j,indx
+!~ 	real*8 :: temp_array(25) = (/(i, i=2,50, 2)/)
+!~ 	real*8 :: Ye_array(26) = (/(i, i=0,50,2)/)/100.0d0
+!~ 	real*8 :: n_array(37)
+!~ 	real*8 :: n_fem,dx
+!~ 	real*8 :: om_array(40) = (/(i,i = 1,40,1)/)/10.0d0 -1.4d0
+!~ 	real*8 :: omega
+!~ 	real*8 :: eas(40)
+!~     real*8,parameter :: nulib_energy_gf = 1.60217733d-6*5.59424238d-55
+!~ 	real*8, parameter :: G_f = 1.16637d-11*(1.97326966d-11)  ! Mev-1  cm 
+!~     real*8,parameter :: nulib_kernel_gf = 6.77140812d-06**3/2.03001708d+05 
+!~ 	real*8, parameter :: hbarc_mevcm = 1.97326966d-11
+!~     real*8, parameter :: c_light = 29979245800.0d0 
+!~ 	n_array(1:9) = (/(i, i=1,9, 1)/)/1.0d4
+!~ 	n_array(10:18) = (/(i, i=1,9, 1)/)/1.0d3
+!~ 	n_array(19:27) = (/(i, i=1,9, 1)/)/1.0d2
+!~ 	n_array(28:37) = (/(i, i=1,10, 1)/)/1.0d1
+	
+!~ 	eas = 0.0d0
+!~ 	n_fem = xn_N /(1.0d13)**3 
+!~ 	if ( n_fem .GT. maxval(n_array) .OR. n_fem .LT. minval(n_array)) then 
+
+!~ 	else
+!~ 		call intp3d_gang_table( xtemp, n_fem, xYe, eas, gang_table, 25, 37, 26, 40, temp_array, n_array, Ye_array)
+!~ 	endif
+!~ 	brem_array = 0.0d0
+!~ 	do i = 1,nulibtable_number_groups
+!~ 		do j = 1, nulibtable_number_groups
+!~ 			omega = log10((nulibtable_energies(i)+nulibtable_energies(j))/nulib_energy_gf)
+!~ 			if ( omega .LT. maxval(om_array) .AND. omega .GT. minval(om_array)) then
+!~ 				dx = 10.0d0
+!~ 				indx= 1+ int((omega-om_array(1))*dx)
+!~ 				brem_array(i,j,1) = eas(indx) * xn_N*(1.26d0/2.0d0)**2*G_f**2*3.0d0 &  ! production
+!~ 									* exp(-10**(omega)/xtemp)*nulib_kernel_gf*hbarc_mevcm**3*c_light
+!~ 				brem_array(i,j,2) = eas(indx) * xn_N*(1.26d0/2.0d0)**2*G_f**2*3.0d0*nulib_kernel_gf&
+!~ 									*hbarc_mevcm**3*c_light!annihilation					
+!~ 			endif 
+!~ 		enddo
+!~ 	enddo
+!~ 	stop
+!~ end subroutine 

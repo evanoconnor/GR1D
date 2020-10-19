@@ -1,0 +1,1271 @@
+Binary files ./GR1D.o and ../../GR1D_origin/GR1D/src/GR1D.o differ
+diff -r ./GR1D_module.F90 ../../GR1D_origin/GR1D/src/GR1D_module.F90
+165,166d164
+<   logical :: include_bremsstrahlung_kernels
+<   logical :: include_gang_kernels
+337,343d334
+<   !matter
+<   real*8,allocatable,save :: bremsstrahlung(:,:,:,:,:) !kernals for  
+<   !brem gang zeroth
+<   real*8,allocatable,save :: bremsstrahlung_sourceterm(:,:,:,:) !for keeping
+<   !track of
+<   !source term
+<   !from brem for
+Binary files ./GR1D_module.o and ../../GR1D_origin/GR1D/src/GR1D_module.o differ
+Binary files ./M1/M1_closure.o and ../../GR1D_origin/GR1D/src/M1/M1_closure.o differ
+Binary files ./M1/M1_conservativeupdate.o and ../../GR1D_origin/GR1D/src/M1/M1_conservativeupdate.o differ
+Binary files ./M1/M1_control.o and ../../GR1D_origin/GR1D/src/M1/M1_control.o differ
+Binary files ./M1/M1_explicitterms.o and ../../GR1D_origin/GR1D/src/M1/M1_explicitterms.o differ
+diff -r ./M1/M1_implicitstep.F90 ../../GR1D_origin/GR1D/src/M1/M1_implicitstep.F90
+33d32
+<   real*8 :: bremsstrahlung_sourceterms(2*number_groups)
+38d36
+<   real*8 :: local_Lbar(number_groups,2,2),local_Hdownbar(number_groups,2)
+40d37
+<   real*8 :: local_Ltildebar(number_groups,2,2)
+42,43d38
+<   real*8 :: local_dMbardE(2,2),local_dJbardE(number_groups),local_dHbardE(number_groups,2)
+<   real*8 :: local_dLbardE(number_groups,2,2),local_dHdownbardE(number_groups,2)
+45d39
+<   real*8 :: local_dLtildebardE(number_groups,2,2)
+48d41
+<   real*8 :: local_dMbardF(2,2),local_dJbardF(number_groups),local_dHbardF(number_groups,2)
+50d42
+<   real*8 :: local_dLbardF(number_groups,2,2),local_dHdownbardF(number_groups,2)
+52d43
+<   real*8 :: local_dLtildebardF(number_groups,2,2)
+111,112c102
+<   !$OMP NL_jacobian,local_M,local_J,local_H, &
+<   !$OMP local_Mbar,local_Jbar,local_Hbar,local_L,local_Lbar, &
+---
+>   !$OMP NL_jacobian,local_M,local_J,local_H,local_Mbar,local_Jbar,local_Hbar,local_L, &
+114,115d103
+<   !$OMP local_dMbardE,local_dJbardE,local_dHbardE,local_dLbardE,&
+<   !$OMP local_dMbardF,local_dJbardF,local_dHbardF, local_dLbardF,&
+117,119c105
+<   !$OMP local_Ltilde,local_dLtildedE,local_dLtildedF, &
+<   !$OMP local_Hdownbar,local_dHdownbardE,local_dHdownbardF, &
+<   !$OMP local_Ltildebar,local_dLtildebardE,local_dLtildebardF,j_prime,nucubed, &
+---
+>   !$OMP local_Ltilde,local_dLtildedE,local_dLtildedF,j_prime,nucubed, &
+349,351c335
+<         if ((include_epannihil_kernels.and.i.eq.3).or.include_Ielectron_imp &
+<             .or. (include_bremsstrahlung_kernels.and.i.eq.3) &
+<             .or. (include_gang_kernels.and.i.eq.3)) then
+---
+>            if ((include_epannihil_kernels.and.i.eq.3).or.include_Ielectron_imp) then
+359d342
+<               local_Lbar = 0.0d0
+368,375d350
+<               local_dMbardE = 0.0d0
+<               local_dJbardE = 0.0d0
+<               local_dHbardE = 0.0d0
+<               local_dLbardE = 0.0d0
+<               local_dMbardF = 0.0d0
+<               local_dJbardF = 0.0d0
+<               local_dHbardF = 0.0d0
+<               local_dLbardF = 0.0d0
+392d366
+< !~                  write(*,*) "nue",dts
+395c369
+<                  Ebar(:) = q_M1_old(k,1,:,1) !nue at time (n+1), because order of species loop  !!! no
+---
+>                  Ebar(:) = q_M1_old(k,1,:,1) !nue at time (n+1), because order of species loop
+398d371
+< !~                  write(*,*) "anue",dts
+420c393
+<                  local_dMdE(1,1) = invalp2   ! why no ispecies factor ?
+---
+>                  local_dMdE(1,1) = invalp2
+425,429d397
+<                  local_dMbardE(1,1) = invalp2
+<                  local_dMbardF(1,2) = invX2*invalp
+<                  local_dMbardF(2,1) = local_dMdF(1,2)
+<                  local_dMbardE(2,2) = eddybar(j)*invX2**2
+<                  
+437,441c405
+< 					   if (i .EQ. 2) then 
+< 	                       local_dJbardE(j) = local_dJbardE(j) + local_dMbardE(ii,jj)*local_u(ii)*local_u(jj)
+< 	                       local_dJbardF(j) = local_dJbardE(j) + local_dMbardF(ii,jj)*local_u(ii)*local_u(jj)
+< 						endif
+< 		
+---
+> 
+447,452d410
+<                        if (i .EQ. 2) then
+< 	                       local_dHbardE(j,1) = local_dHbardE(j,1) - &
+< 												local_dMbardE(ii,jj)*local_u(ii)*local_littleh(1,jj)
+< 	                       local_dHbardF(j,1) = local_dHbardF(j,1) - &
+< 												local_dMbardF(ii,jj)*local_u(ii)*local_littleh(1,jj)
+< 	                   endif 
+457,462d414
+<                        if ( i.EQ. 2) then 
+< 	                       local_dHbardE(j,2) = local_dHbardE(j,2) - &
+< 											 local_dMbardE(ii,jj)*local_u(ii)*local_littleh(2,jj)
+< 	                       local_dHbardF(j,2) = local_dHbardF(j,2) - &
+< 											 local_dMbardF(ii,jj)*local_u(ii)*local_littleh(2,jj)
+< 	                   endif
+478,489c430
+< 	                   if ( i .EQ. 2) then 
+< 		                   local_Lbar(j,1,1) = local_Lbar(j,1,1) + &
+< 	                            (local_Mbar(ii,jj)*local_littleh(1,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 	                            (local_littlehupup(1,1)*local_Jbar(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 	                       local_dLbardE(j,1,1) = local_dLbardE(j,1,1) + &
+< 	                            (local_dMbardE(ii,jj)*local_littleh(1,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 	                            (local_littlehupup(1,1)*local_dJbardE(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 	                       local_dLbardF(j,1,1) = local_dLbardF(j,1,1) + &
+< 	                            (local_dMbardF(ii,jj)*local_littleh(1,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 	                            (local_littlehupup(1,1)*local_dJbardF(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 					   endif
+< 						
+---
+> 
+491,492c432,433
+< 						(local_M(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 						(local_littlehupup(1,2)*local_J(j)*onethird)*(1.5d0-1.5d0*chi(j))
+---
+>                             (local_M(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+>                             (local_littlehupup(1,2)*local_J(j)*onethird)*(1.5d0-1.5d0*chi(j))
+499,511c440
+< 	                    
+< 	                   if ( i.EQ. 2) then 
+< 						   local_Lbar(j,1,2) = local_Lbar(j,1,2) + &
+< 								(local_Mbar(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 								(local_littlehupup(1,2)*local_Jbar(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 	                       local_dLbardE(j,1,2) = local_dLbardE(j,1,2) + &
+< 	                            (local_dMbardE(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 	                            (local_littlehupup(1,2)*local_dJbardE(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 	                       local_dLbardF(j,1,2) = local_dLbardF(j,1,2) + &
+< 	                            (local_dMbardF(ii,jj)*local_littleh(1,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 	                            (local_littlehupup(1,2)*local_dJbardF(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 						endif 
+< 						
+---
+> 
+513,515c442,443
+< 						(local_M(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 						(local_littlehupup(2,1)*local_J(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 						
+---
+>                             (local_M(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+>                             (local_littlehupup(2,1)*local_J(j)*onethird)*(1.5d0-1.5d0*chi(j))
+522,533c450
+<                        if ( i .EQ. 2) then 
+< 	                       local_Lbar(j,2,1) = local_Lbar(j,2,1) + &
+< 							(local_Mbar(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 							(local_littlehupup(2,1)*local_Jbar(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 	                       local_dLbardE(j,2,1) = local_dLbardE(j,2,1) + &
+< 	                            (local_dMbardE(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 	                            (local_littlehupup(2,1)*local_dJbardE(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 	                       local_dLbardF(j,2,1) = local_dLbardF(j,2,1) + &
+< 	                            (local_dMbardF(ii,jj)*local_littleh(2,ii)*local_littleh(1,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 	                            (local_littlehupup(2,1)*local_dJbardF(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 					   endif 
+< 						
+---
+> 
+543,554d459
+<                        if ( i .EQ. 2) then 
+< 						   local_Lbar(j,2,2) = local_Lbar(j,2,2) + &
+<                             (local_Mbar(ii,jj)*local_littleh(2,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+<                             (local_littlehupup(2,2)*local_Jbar(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 	                       local_dLbardE(j,2,2) = local_dLbardE(j,2,2) + &
+< 	                            (local_dMbardE(ii,jj)*local_littleh(2,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 	                            (local_littlehupup(2,2)*local_dJbardE(j)*onethird)*(1.5d0-1.5d0*chi(j))
+< 	                       local_dLbardF(j,2,2) = local_dLbardF(j,2,2) + &
+< 	                            (local_dMbardF(ii,jj)*local_littleh(2,ii)*local_littleh(2,jj))*(1.5d0*chi(j)-0.5d0) + &
+< 	                            (local_littlehupup(2,2)*local_dJbardF(j)*onethird)*(1.5d0-1.5d0*chi(j))
+<                        endif
+<                        
+561,565d465
+<                  if (i.EQ.2) then
+< 					 local_Hdownbar(j,1) = sum(local_Hbar(j,:)*local_littlehdowndown(1,:))
+< 	                 local_dHdownbardE(j,1) = sum(local_dHbardE(j,:)*local_littlehdowndown(1,:))
+< 	                 local_dHdownbardF(j,1) = sum(local_dHbardF(j,:)*local_littlehdowndown(1,:))
+< 				 endif
+570,574d469
+< 				  if ( i.EQ. 2) then 
+< 				     local_Hdownbar(j,2) = sum(local_Hbar(j,:)*local_littlehdowndown(2,:))
+< 	                 local_dHdownbardE(j,2) = sum(local_dHbardE(j,:)*local_littlehdowndown(2,:))
+< 	                 local_dHdownbardF(j,2) = sum(local_dHbardF(j,:)*local_littlehdowndown(2,:))
+<                  endif
+580,587c475
+<                  if (i.EQ. 2) then 
+< 					 local_Ltildebar(j,1,1) = -local_Lbar(j,1,1)*alp2 - local_Jbar(j)*local_littleh(1,1)*onethird
+< 	                 local_dLtildebardE(j,1,1) = -local_dLbardE(j,1,1)*alp2 &
+< 												 - local_dJbardE(j)*local_littleh(1,1)*onethird
+< 	                 local_dLtildebardF(j,1,1) = -local_dLbardF(j,1,1)*alp2 &
+< 												 - local_dJbardF(j)*local_littleh(1,1)*onethird
+< 				 endif
+< 				 
+---
+> 
+591,597d478
+< 				 if ( i.EQ.2) then 
+< 					local_Ltildebar(j,1,2) = local_Lbar(j,1,2)*X2 - local_Jbar(j)*local_littleh(1,2)*onethird
+< 	                 local_dLtildebardE(j,1,2) = local_dLbardE(j,1,2)*X2 &
+< 												- local_dJbardE(j)*local_littleh(1,2)*onethird
+< 	                 local_dLtildebardF(j,1,2) = local_dLbardF(j,1,2)*X2 &
+< 												- local_dJbardF(j)*local_littleh(1,2)*onethird
+< 				 endif
+602,608d482
+<                  if (i.EQ.2) then 
+<                      local_Ltildebar(j,2,1) = -local_Lbar(j,2,1)*alp2 - local_Jbar(j)*local_littleh(2,1)*onethird
+< 	                 local_dLtildebardE(j,2,1) = -local_dLbardE(j,2,1)*alp2 &
+< 													- local_dJbardE(j)*local_littleh(2,1)*onethird
+< 	                 local_dLtildebardF(j,2,1) = -local_dLbardF(j,2,1)*alp2 &
+< 												- local_dJbardF(j)*local_littleh(2,1)*onethird
+< 				 endif
+613,619d486
+<                  if(i.EQ.2) then 
+<                      local_Ltildebar(j,2,2) = local_Lbar(j,2,2)*X2 - local_Jbar(j)*local_littleh(2,2)*onethird
+< 	                 local_dLtildebardE(j,2,2) = local_dLbardE(j,2,2)*X2 &
+< 												- local_dJbardE(j)*local_littleh(2,2)*onethird
+< 	                 local_dLtildebardF(j,2,2) = local_dLbardF(j,2,2)*X2 &
+< 												- local_dJbardF(j)*local_littleh(2,2)*onethird
+<                  endif
+626,632c493,494
+< !~            if ((include_epannihil_kernels .AND. i.eq.3 ) &
+< !~ 				.or.(include_bremsstrahlung_kernels .AND. &
+< !~ 				( i.NE. 2))) then !.AND. i.NE.2)) then
+<            if ((include_epannihil_kernels.or.include_bremsstrahlung_kernels .or. & 
+< 				include_gang_kernels ) .AND. i.eq.3  &
+< 				) then
+< !~               if (i.ne.3) stop "check update_eas to see if all kernels are getting interpolated i.ne.3 is highly experimental"
+---
+>            if (include_epannihil_kernels.and.i.eq.3) then
+>               if (i.ne.3) stop "check update_eas to see if all kernels are getting interpolated i.ne.3 is highly experimental"
+663,673c525,530
+<                     
+<                     R0pro = 0.5d0*(epannihil(k,i,j,j_prime,1) &
+<                                 + bremsstrahlung(k,i,j,j_prime,1) )
+<                     R0ann = 0.5d0*(epannihil(k,i,j,j_prime,2) &
+<                                 + bremsstrahlung(k,i,j,j_prime,2) )
+< 
+<                     R1pro = 1.5d0*(epannihil(k,i,j,j_prime,3) &
+<                                 - 1.0d0 /9.0d0 *bremsstrahlung(k,i,j,j_prime,1))
+<                     R1ann = 1.5d0*(epannihil(k,i,j,j_prime,4) &
+<                                 - 1.0d0 /9.0d0 *bremsstrahlung(k,i,j,j_prime,2))
+<                     
+---
+> 
+>                     R0pro = 0.5d0*epannihil(k,i,j,j_prime,1)
+>                     R0ann = 0.5d0*epannihil(k,i,j,j_prime,2)
+> 
+>                     R1pro = 1.5d0*epannihil(k,i,j,j_prime,3)
+>                     R1ann = 1.5d0*epannihil(k,i,j,j_prime,4)
+690c547
+< 	
+---
+> 
+756,757d612
+< !~            if (include_bremsstrahlung_kernels .AND. (i.EQ.2) .AND. (bounce .EQV. .FALSE.)) then
+< 		
+1176,1177c1031
+<            if (include_Ielectron_imp.or.include_energycoupling_imp.or.include_epannihil_kernels&
+< 			.or.include_bremsstrahlung_kernels.or.include_gang_kernels) then
+---
+>            if (include_Ielectron_imp.or.include_energycoupling_imp.or.include_epannihil_kernels) then
+1307c1161
+<                        !first time in here, try making energy coupling implicit
+---
+>                        !first time in here, try making energy coupling implcit
+1331,1334d1184
+< !~ 					   sourceG(problem_zone,3) = q_M1_old(k,i,problem_zone,1) + &
+< !~ 						   D_M1(k,i,j,2)
+< !~ 					   sourceG(problem_zone,1) = sourceG(problem_zone,1) - &
+< !~ 						   B_M1(k,i,problem_zone,1)/q_M1_old(k,i,problem_zone,1)
+1351,1360c1201,1203
+< !~               write(*,*) RF(14)*NLsolve_x(14),RF(32)*NLsolve_x(32)
+< !~               write(*,*) RF
+<               write(*,*)
+< !~               write(*,*) NLsolve_x(14), minval(NLsolve_x)
+<               write(*,*)
+< !~               write(*,*) epannihil_sourceterms(14)
+< !~               write(*,*) ies_sourceterms(14)
+<               write(*,*) maxval(abs(RF))
+<               write(*,*) " count > 90 " 
+<               write(*,*)
+---
+>               write(*,*) RF(14)*NLsolve_x(14),RF(32)*NLsolve_x(32)
+>               write(*,*) RF
+>               write(*,*) NLsolve_x
+1362,1370d1204
+<            
+< !~            if (count .GT. 0) then 
+< !~ 	           write(*,*) count, i
+< !~ 	          write(*,*) epannihil_sourceterms(2),epannihil_sourceterms(14),epannihil_sourceterms(17)
+< !~               write(*,*) ies_sourceterms(2),ies_sourceterms(14),ies_sourceterms(17)
+< !~               write(*,*) NLsolve_x(2),NLsolve_x(14),NLsolve_x(17)
+< !~               write(*,*) 
+< !~               if (i.EQ. 3 .AND. count .GT. 3) stop
+< !~            endif
+1401,1402c1235,1236
+<            else if (count.gt.150.and.maxval(abs(RF)).gt.1.0d-5) then
+<               write(*,*) "warning, no tolerance after 150 iterations,stopping", k,i,maxval(abs(RF))
+---
+>            else if (count.gt.100.and.maxval(abs(RF)).gt.1.0d-5) then
+>               write(*,*) "warning, no tolerance after 100 iterations", k
+1478,1479c1312
+<            if (include_epannihil_kernels.or.include_bremsstrahlung_kernels&
+<                 .or.include_gang_kernels) then
+---
+>            if (include_epannihil_kernels) then
+1491,1492c1324
+<            if (include_epannihil_kernels.or.include_bremsstrahlung_kernels&
+<                 .or.include_gang_kernels) then
+---
+>            if (include_epannihil_kernels) then
+Binary files ./M1/M1_implicitstep.o and ../../GR1D_origin/GR1D/src/M1/M1_implicitstep.o differ
+diff -r ./M1/M1_init.F90 ../../GR1D_origin/GR1D/src/M1/M1_init.F90
+11,12c11
+<        include_epannihil_kernels,M1_extractradii,M1_iextractradii, &
+<        include_bremsstrahlung_kernels,include_gang_kernels
+---
+>        include_epannihil_kernels,M1_extractradii,M1_iextractradii
+19,20c18
+<   call nulibtable_reader(opacity_table,include_nes_kernels,include_epannihil_kernels&
+< 						,include_bremsstrahlung_kernels,include_gang_kernels)
+---
+>   call nulibtable_reader(opacity_table,include_nes_kernels,include_epannihil_kernels)
+49,56d46
+<   
+<     if (include_bremsstrahlung_kernels) then
+<      nulibtable_bremsstrahlung_Phi0 = log10(10.0d0**nulibtable_bremsstrahlung_Phi0*nulib_kernel_gf)
+<   endif
+<     if (include_gang_kernels) then
+<      nulibtable_bremsstrahlung_gang_Phi0 = log10(10.0d0**nulibtable_bremsstrahlung_gang_Phi0*nulib_kernel_gf)
+<   endif
+< 
+Binary files ./M1/M1_init.o and ../../GR1D_origin/GR1D/src/M1/M1_init.o differ
+Binary files ./M1/M1_reconstruct.o and ../../GR1D_origin/GR1D/src/M1/M1_reconstruct.o differ
+Binary files ./M1/M1_testcases.o and ../../GR1D_origin/GR1D/src/M1/M1_testcases.o differ
+diff -r ./M1/M1_updateeas.F90 ../../GR1D_origin/GR1D/src/M1/M1_updateeas.F90
+9,11c9,10
+<   real*8 :: xrho,xtemp,xye,xeta,xxp,xxn
+<   real*8,dimension(3) :: xn_N
+<   integer :: k,i,j,spec
+---
+>   real*8 :: xrho,xtemp,xye,xeta
+>   integer :: k,i,j
+21,23d19
+<   
+<   real*8 :: bremsstrahlung_tempspectrum(number_species,number_groups,number_groups,2)
+<   real*8 :: singlespecies_bremsstrahlung_tempspectrum(number_groups,number_groups,2)
+27,31d22
+<   
+<   real*8 :: integrator,integrator2
+<   integer :: myid
+<   real,parameter :: m_amu = 931.494061d0 !MeV
+<   real,parameter :: mev_to_gram = 1.782661758d-27 !one MeV is # grams
+36c27
+<   if (M1_testcase_number.eq.0 .or.M1_testcase_number.eq.1) then
+---
+>   if (M1_testcase_number.eq.0.or.M1_testcase_number.eq.1) then
+38c29
+<      !$OMP PARALLEL DO PRIVATE(xrho,xtemp,xye,xxn,xxp,xn_N,tempspectrum,singlespecies_tempspectrum, &
+---
+>      !$OMP PARALLEL DO PRIVATE(xrho,xtemp,xye,tempspectrum,singlespecies_tempspectrum, &
+40,45c31
+<      !$OMP epannihil_tempspectrum,singlespecies_epannihil_tempspectrum,integrator2,integrator, &
+<      !$OMP bremsstrahlung_tempspectrum,singlespecies_bremsstrahlung_tempspectrum,blackbody_spectra, & 
+<      !$omp energy_x,i,j,spec)
+< 
+< 
+<      
+---
+>      !$OMP epannihil_tempspectrum,singlespecies_epannihil_tempspectrum,blackbody_spectra,energy_x,i,j)
+47,49c33
+<     
+<    !     write(*,*) nulibtable_logtemp_max
+<     
+---
+>         
+125,129c109,110
+<         !get electron chemical potential if scattering/epannihil is turned on &
+<         ! get number density if bremsstrahlung is turned on
+<         
+<         if (include_Ielectron_exp.or.include_Ielectron_imp.or.include_epannihil_kernels &
+< 		.or. include_bremsstrahlung_kernels.or.include_gang_kernels) then
+---
+>         !get electron chemical potential if scattering/epannihil is turned on
+>         if (include_Ielectron_exp.or.include_Ielectron_imp.or.include_epannihil_kernels) then
+134c115
+<                 eosdummy(9),xxn,xxp,eosdummy(12), &
+---
+>                 eosdummy(9),eosdummy(10),eosdummy(11),eosdummy(12), &
+137,138d117
+< 
+<                 
+149,155d127
+<            
+<            if (include_bremsstrahlung_kernels) then
+< 	           xn_N(1) = xxn*xrho/(m_amu*mev_to_gram)
+< 			   xn_N(2) = xxp*xrho/(m_amu*mev_to_gram)
+<                xn_N(3) = SQRT(xxn*xxp)*xrho/(m_amu*mev_to_gram)
+<            endif
+<            
+157c129
+<         
+---
+> 
+168,171c140
+<               if (log10(xtemp).gt.nulibtable_logItemp_max) then 
+<                         write(*,*) xtemp, log10(xtemp),nulibtable_logItemp_max
+<                         stop "M1_update_eas: temp too high"
+<               endif
+---
+>               if (log10(xtemp).gt.nulibtable_logItemp_max) stop "M1_update_eas: temp too high"
+226,319d194
+<         
+<         
+<         !get bremsstrahlung kernels for i.eq.3 only, if turned on
+<         if (include_bremsstrahlung_kernels) then
+<            bremsstrahlung_tempspectrum = 0.0d0
+<            !if (log10(xrho).lt.nulibtable_logrho_min) then
+<            if (log10(xrho) .lt. 11.22d0 .or. log10(xrho) .gt. 15.22d0 &
+<                 .or. xtemp .LT. 2.0d0 .or. xtemp .GT. 50.0d0 .or.  &
+<                 xye .GT. 0.5d0) then  
+<                   bremsstrahlung_tempspectrum = 0.0d0
+<            else
+<               if (log10(xtemp).lt.nulibtable_logItemp_min) stop "M1_update_eas: Itemp too low"
+<               if (ANY(log10(xn_N).lt.nulibtable_logn_N_min)) then
+<                  write(*,*) xrho,xtemp,xye,xn_N
+<                  stop "M1_update_eas: n_N too low"
+<               endif
+<               if (log10(xtemp).gt.nulibtable_logItemp_max) then 
+<                  write(*,*) xtemp, log10(xtemp),nulibtable_logItemp_max
+<                  stop "M1_update_eas: temp too high"
+<               endif
+<               if (ANY(log10(xn_N).gt.nulibtable_logn_N_max)) then
+<                  write(*,*) xrho,xtemp,xye,xn_N,nulibtable_logn_N_max,k
+<                  stop "M1_update_eas: n_N too high"
+<               endif
+< !~                 write(*,*) log10(xrho)
+<               !only do this for nux
+<               i = 3
+< !~               xtemp = 26.0298d0
+< !~               xn_N=1.54314e+28
+<               call nulibtable_bremsstrahlung_single_species_range_energy2(xtemp,xn_N,i, &
+<                    singlespecies_bremsstrahlung_tempspectrum,number_groups,number_groups,2)
+<                    
+<                 if ( ANY(singlespecies_bremsstrahlung_tempspectrum < 0.0d0) ) then
+<                     write(*,*) xrho,xtemp,xye,xn_N,nulibtable_logn_N_max,k
+<                     stop "brem <0"
+<                 endif
+< !~                 write(*,*)  singlespecies_bremsstrahlung_tempspectrum(11,11,1)
+< !~                 write(*,*) nulibtable_energies(10),nulibtable_energies(11)
+< !~                 write(*,*) nulibtable_ewidths(11)
+< !~                 stop
+< !~ 			  do spec = 1,3
+< 	              bremsstrahlung_tempspectrum(1,:,:,:) = singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+< 	              bremsstrahlung_tempspectrum(2,:,:,:) = singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+< 	              bremsstrahlung_tempspectrum(3,:,:,:) = singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+< !~               enddo
+<            endif
+<            
+<            !set new ep annihilation variables
+<            bremsstrahlung(k,:,:,:,:) = bremsstrahlung_tempspectrum(:,:,:,:)
+< 
+<         endif
+<         
+<                
+<         if (include_gang_kernels) then 
+<               bremsstrahlung_tempspectrum = 0.0d0
+<               singlespecies_bremsstrahlung_tempspectrum = 0.0d0
+<               if (log10(xtemp).lt.nulibtable_logItemp_min) then 
+<                     write(*,*) xtemp,log10(xtemp)   
+<                     stop "M1_update_eas: Itemp too low"
+<               endif 
+<               if (log10(xye).gt.nulibtable_logYe_min .or. &
+<                   log10(xye).lt.nulibtable_logYe_max .or. &
+<                 log10(xrho/(m_amu*mev_to_gram)).lt.nulibtable_logn_N_min .or. &
+<                 log10(xrho/(m_amu*mev_to_gram)).gt.nulibtable_logn_N_max .or. &
+<                 log10(xtemp).gt.nulibtable_logItemp_max .or. &
+<                 log10(xtemp).lt.nulibtable_logItemp_min) then 
+<               else
+<               
+<                   if (log10(xrho/(m_amu*mev_to_gram)).lt.nulibtable_logn_N_min) then
+<                         write(*,*) xrho,xtemp,xye,xrho/(m_amu*mev_to_gram),nulibtable_logn_N_min,k
+<                          stop "M1_update_eas: n_N too low"
+<                   endif
+<                  if (log10(xtemp).gt.nulibtable_logItemp_max) then 
+<                            write(*,*) xtemp,log10(xtemp)
+<                         stop "M1_update_eas: temp too high"
+<                 endif 
+< 
+<                 if (log10(xrho/(m_amu*mev_to_gram)).gt.nulibtable_logn_N_max) then
+<                          write(*,*) xrho,xtemp,xye,xrho/(m_amu*mev_to_gram),nulibtable_logn_N_max,k
+<                         stop "M1_update_eas: n_N too high"
+<                 endif
+<                 i=3
+<                 call nulibtable_bremsstrahlung_gang_single_species_range_energy2(xtemp,&
+<                                         xrho/(m_amu*mev_to_gram),xYe, &
+<                             i,singlespecies_bremsstrahlung_tempspectrum,number_groups,number_groups,2)
+< 
+<                 bremsstrahlung_tempspectrum(1,:,:,:) =singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+<                 bremsstrahlung_tempspectrum(2,:,:,:) =singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+<                 bremsstrahlung_tempspectrum(3,:,:,:) =singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+< 
+<               endif  
+<               bremsstrahlung(k,:,:,:,:) =bremsstrahlung_tempspectrum(:,:,:,:)
+<               
+<         
+321,327c196
+<               if ( ANY(singlespecies_bremsstrahlung_tempspectrum < 0.0d0) ) then
+<                     write(*,*)  singlespecies_bremsstrahlung_tempspectrum
+<                     write(*,*) xrho,xtemp,xye,xn_N,nulibtable_logn_N_max,k
+<                     stop "brem gang <0"
+<               endif
+<         endif
+<     enddo
+---
+>      enddo
+329c198
+<       
+---
+> 
+Binary files ./M1/M1_updateeas.o and ../../GR1D_origin/GR1D/src/M1/M1_updateeas.o differ
+Binary files ./OSC.o and ../../GR1D_origin/GR1D/src/OSC.o differ
+diff -r ./Step.F90 ../../GR1D_origin/GR1D/src/Step.F90
+358c358
+< 	q_M1_old = q_M1
+---
+> 
+361c361
+< !~ 	stop
+---
+> 
+Binary files ./Step.o and ../../GR1D_origin/GR1D/src/Step.o differ
+Binary files ./TVD_reconstruction.o and ../../GR1D_origin/GR1D/src/TVD_reconstruction.o differ
+diff -r ./allocate_vars.F90 ../../GR1D_origin/GR1D/src/allocate_vars.F90
+89c89
+<   allocate(epannihil(n1,number_species,number_groups,number_groups,4)) ! epan kernel \phis
+---
+>   allocate(epannihil(n1,number_species,number_groups,number_groups,4)) ! scattering kernel \phis
+91d90
+<   allocate(bremsstrahlung(n1,number_species,number_groups,number_groups,2)) ! brem kernel \phi 
+Binary files ./allocate_vars.o and ../../GR1D_origin/GR1D/src/allocate_vars.o differ
+Binary files ./analysis.o and ../../GR1D_origin/GR1D/src/analysis.o differ
+Binary files ./atmosphere.o and ../../GR1D_origin/GR1D/src/atmosphere.o differ
+Binary files ./boundaries.o and ../../GR1D_origin/GR1D/src/boundaries.o differ
+diff -r ./collapse.F90 ../../GR1D_origin/GR1D/src/collapse.F90
+46d45
+<   
+Binary files ./collapse.o and ../../GR1D_origin/GR1D/src/collapse.o differ
+Binary files ./con2prim.o and ../../GR1D_origin/GR1D/src/con2prim.o differ
+Binary files ./driver.o and ../../GR1D_origin/GR1D/src/driver.o differ
+Binary files ./eos.o and ../../GR1D_origin/GR1D/src/eos.o differ
+Binary files ./flux_differences_HLLE.o and ../../GR1D_origin/GR1D/src/flux_differences_HLLE.o differ
+Binary files ./gr1d_module.mod and ../../GR1D_origin/GR1D/src/gr1d_module.mod differ
+Binary files ./gravity.o and ../../GR1D_origin/GR1D/src/gravity.o differ
+Binary files ./grid.o and ../../GR1D_origin/GR1D/src/grid.o differ
+Binary files ./hybrid_eos_module.mod and ../../GR1D_origin/GR1D/src/hybrid_eos_module.mod differ
+diff -r ./initialize_vars.F90 ../../GR1D_origin/GR1D/src/initialize_vars.F90
+53,54d52
+<   include_bremsstrahlung_kernels = .false.
+<   include_gang_kernels = .false.
+209c207
+<   q_M1_fluid(:,:,:,2) = 1.0d-100
+---
+>   q_M1_fluid(:,:,:,2) = 1.0d-110
+228d225
+<   bremsstrahlung(:,:,:,:,:) = 0.0d0  
+Binary files ./initialize_vars.o and ../../GR1D_origin/GR1D/src/initialize_vars.o differ
+diff -r ./input_parser.F90 ../../GR1D_origin/GR1D/src/input_parser.F90
+153,158d152
+<      call get_logical_parameter('include_bremsstrahlung_kernels',include_bremsstrahlung_kernels)
+<      call get_logical_parameter('include_gang_kernels',include_gang_kernels)
+<      if ( include_bremsstrahlung_kernels .AND. include_gang_kernels ) then 
+< 		write(*,*) "Need to chose which bremsstrahlung !"
+< 		stop
+<      endif 
+Binary files ./input_parser.o and ../../GR1D_origin/GR1D/src/input_parser.o differ
+Only in .: list_diff
+Binary files ./map_profile.o and ../../GR1D_origin/GR1D/src/map_profile.o differ
+Binary files ./mass_interior.o and ../../GR1D_origin/GR1D/src/mass_interior.o differ
+Only in .: master_grep.txt
+Binary files ./neutrino_pressure.o and ../../GR1D_origin/GR1D/src/neutrino_pressure.o differ
+Binary files ./nuc_eos/bisection.o and ../../GR1D_origin/GR1D/src/nuc_eos/bisection.o differ
+Binary files ./nuc_eos/eosmodule.o and ../../GR1D_origin/GR1D/src/nuc_eos/eosmodule.o differ
+Binary files ./nuc_eos/findtemp.o and ../../GR1D_origin/GR1D/src/nuc_eos/findtemp.o differ
+Binary files ./nuc_eos/linterp.o and ../../GR1D_origin/GR1D/src/nuc_eos/linterp.o differ
+Binary files ./nuc_eos/linterp_many.o and ../../GR1D_origin/GR1D/src/nuc_eos/linterp_many.o differ
+Binary files ./nuc_eos/nuc_eos.a and ../../GR1D_origin/GR1D/src/nuc_eos/nuc_eos.a differ
+Binary files ./nuc_eos/nuc_eos.o and ../../GR1D_origin/GR1D/src/nuc_eos/nuc_eos.o differ
+Binary files ./nuc_eos/readtable.o and ../../GR1D_origin/GR1D/src/nuc_eos/readtable.o differ
+diff -r ./nulibtable/linterp_many_mod.F90 ../../GR1D_origin/GR1D/src/nulibtable/linterp_many_mod.F90
+198,329d197
+<   SUBROUTINE intp3d_gang_table( x, y, z, f, ft, nx, ny, nz, nvars, xt, yt, zt)
+< !
+<       implicit none
+< !                                                          
+< !---------------------------------------------------------------------
+< !
+< !     purpose: interpolation of a function of three variables in an
+< !              equidistant(!!!) table.
+< !
+< !     method:  8-point Lagrange linear interpolation formula          
+< !
+< !     x        input vector of first  variable
+< !     y        input vector of second variable
+< !     z        input vector of third  variable
+< !
+< !     f        output vector of interpolated function values
+< !
+< !     ft       3d array of tabulated function values
+< !     nx       x-dimension of table
+< !     ny       y-dimension of table
+< !     nz       z-dimension of table
+< !     xt       vector of x-coordinates of table
+< !     yt       vector of y-coordinates of table
+< !     zt       vector of z-coordinates of table
+< !
+< !---------------------------------------------------------------------
+< 
+<       integer nx,ny,nz,iv,nvars
+<       real*8 :: ft(nx,ny,nz,nvars)
+< 
+<       real*8 x,y,z,f(nvars)
+<       real*8 xt(nx),yt(ny),zt(nz)
+<       real*8 d1,d2,d3
+< !
+< !
+<       real*8  fh(8,nvars), delx, dely, delz, &
+<            a1(nvars), a2(nvars), a3(nvars), a4(nvars), &
+<            a5(nvars), a6(nvars), a7(nvars), a8(nvars)
+< 
+<       real*8 dx,dy,dz,dxi,dyi,dzi,dxyi,dxzi,dyzi,dxyzi
+<       integer n,ix,iy,iz
+< 
+< !
+< !------  determine spacing parameters of (equidistant!!!) table
+< !
+<       dx    = (xt(nx) - xt(1)) / dble(nx-1)
+< !~       dy    = (yt(ny) - yt(1)) / dble(ny-1)
+<       if ( y .LT. 1.0d-3 ) then 
+< 		dy = 1.0d-4
+< 		 dyi   = 1.0d0 / dy
+< 		iy = 2 + int( (y - yt(1) - 1.0d-10) * dyi )
+< 	  else if ( y .GT. 1.0d-3 .AND. y .LT. 1.0d-2) then
+< 		dy = 1.0d-3
+< 		 dyi   = 1.0d0 / dy
+< 		iy = 11 + int( (y - yt(10) - 1.0d-10) * dyi )
+< 	  else if ( y .GT. 1.0d-2 .AND. y .LT. 1.0d-1) then 
+< 	    dy = 1.0d-2
+< 	     dyi   = 1.0d0 / dy
+< 	    iy = 20 + int( (y - yt(19) - 1.0d-10) * dyi )
+< 	  else if ( y .GT. 1.0d-1 .AND. y .LT. 1.0d0) then 
+< 		dy = 1.0d-1
+< 		 dyi   = 1.0d0 / dy
+< 		iy = 29 + int( (y - yt(28) - 1.0d-10) * dyi )
+< 	  else 
+< 		write(*,*) y,"y not parametrized, Abort"
+< 		stop
+< 	  endif
+<       dz    = (zt(nz) - zt(1)) / dble(nz-1)
+< 
+<       dxi   = 1.0d0 / dx
+< !~       dyi   = 1.0d0 / dy
+<       dzi   = 1.0d0 / dz
+< !
+<       dxyi  = dxi * dyi
+<       dxzi  = dxi * dzi
+<       dyzi  = dyi * dzi
+< !
+<       dxyzi = dxi * dyi * dzi
+< 
+< !
+< !------- determine location in (equidistant!!!) table 
+< !                                                                  
+<       ix = 2 + int( (x - xt(1) - 1.0d-10) * dxi )
+< !~       iy = 2 + int( (y - yt(1) - 1.0d-10) * dyi )
+<       iz = 2 + int( (z - zt(1) - 1.0d-10) * dzi )
+< 
+<       ix = MAX( 2, MIN( ix, nx ) )
+<       iy = MAX( 2, MIN( iy, ny ) )
+<       iz = MAX( 2, MIN( iz, nz ) )
+< 
+< !
+< !------- set-up auxiliary arrays for Lagrange interpolation
+< !                                                                 
+<       delx = xt(ix) - x
+<       dely = yt(iy) - y
+<       delz = zt(iz) - z
+<       
+< !~       write(*,*) iy,y
+<       do iv = 1, nvars
+<          fh(1,iv) = ft(ix  , iy  , iz, iv  )                             
+<          fh(2,iv) = ft(ix-1, iy  , iz, iv  )                             
+<          fh(3,iv) = ft(ix  , iy-1, iz, iv  )                             
+<          fh(4,iv) = ft(ix  , iy  , iz-1, iv)                             
+<          fh(5,iv) = ft(ix-1, iy-1, iz, iv  )                             
+<          fh(6,iv) = ft(ix-1, iy  , iz-1, iv)                             
+<          fh(7,iv) = ft(ix  , iy-1, iz-1, iv)                             
+<          fh(8,iv) = ft(ix-1, iy-1, iz-1, iv)                             
+< !              
+< !------ set up coefficients of the interpolation polynomial and 
+< !       evaluate function values 
+<             !                                                    
+<          a1(iv) = fh(1,iv)                             
+<          a2(iv) = dxi   * ( fh(2,iv) - fh(1,iv) )       
+<          a3(iv) = dyi   * ( fh(3,iv) - fh(1,iv) )       
+<          a4(iv) = dzi   * ( fh(4,iv) - fh(1,iv) )       
+<          a5(iv) = dxyi  * ( fh(5,iv) - fh(2,iv) - fh(3,iv) + fh(1,iv) )
+<          a6(iv) = dxzi  * ( fh(6,iv) - fh(2,iv) - fh(4,iv) + fh(1,iv) )
+<          a7(iv) = dyzi  * ( fh(7,iv) - fh(3,iv) - fh(4,iv) + fh(1,iv) )
+<          a8(iv) = dxyzi * ( fh(8,iv) - fh(1,iv) + fh(2,iv) + fh(3,iv) + &
+<               fh(4,iv) - fh(5,iv) - fh(6,iv) - fh(7,iv) )
+< !
+<          f(iv)  = a1(iv) +  a2(iv) * delx                         &
+<               +  a3(iv) * dely                         &
+<               +  a4(iv) * delz                         &
+<               +  a5(iv) * delx * dely               &
+<               +  a6(iv) * delx * delz               &
+<               +  a7(iv) * dely * delz               &
+<               +  a8(iv) * delx * dely * delz     
+< !
+<       enddo
+<       
+<     end SUBROUTINE intp3d_gang_table
+Binary files ./nulibtable/linterp_many_mod.o and ../../GR1D_origin/GR1D/src/nulibtable/linterp_many_mod.o differ
+diff -r ./nulibtable/nulibtable.F90 ../../GR1D_origin/GR1D/src/nulibtable/nulibtable.F90
+14,15d13
+<   real*8, allocatable,save :: nulibtable_logn_N(:)
+<   real*8, allocatable,save :: nulibtable_logYe(:)
+36,39d33
+<   
+<   real*8, allocatable,save :: nulibtable_bremsstrahlung_Phi0(:,:,:)
+<   real*8, allocatable,save :: nulibtable_bremsstrahlung_gang_Phi0(:,:,:,:)
+< !~   real*8, allocatable,save :: gang_table(:,:,:,:)
+47,48d40
+<   integer :: nulibtable_nn_N
+<   integer :: nulibtable_nIYe
+64,69d55
+<   
+<   real*8 :: nulibtable_logn_N_max
+<   real*8 :: nulibtable_logn_N_min
+< 
+<   real*8 :: nulibtable_logYe_max
+<   real*8 :: nulibtable_logYe_min
+545,547d530
+<   
+< !~   write(*,*) MAXVAL(nulibtable_epannihiltable_Phi0),MINVAL(nulibtable_epannihiltable_Phi0)
+<   
+582,863d564
+< !this takes temp,eta, and return phi0/1 for ep-annihilation over energy (both neutrinos) and species range
+< subroutine nulibtable_bremsstrahlung_range_species_range_energy2(xtemp,xn_N, &
+<      eas,eas_n1,eas_n2,eas_n3,eas_n4)
+< 
+<   use nulibtable
+<   implicit none
+< 
+<   real*8, intent(in) :: xtemp, xn_N(3) !inputs
+<   real*8 :: xltemp, xln_N !log versions
+<   integer, intent(in) :: eas_n1,eas_n2,eas_n3,eas_n4
+<   real*8, intent(out) :: eas(eas_n1,eas_n2,eas_n3,eas_n4)
+<   integer :: ins,ing_this,ing_that,i
+<   real*8 :: xeas(eas_n1*eas_n2*eas_n3*2)
+<   integer :: index
+<   real*8 :: energy_conversion = 1.60217733d-6*5.59424238d-55
+< 
+< 
+<   if(size(eas,1).ne.nulibtable_number_species) then
+<      stop "nulibtable_bremsstrahlung_range_species_range_energy: supplied array dimensions (1) is not commensurate with table"
+<   endif
+<   if(size(eas,2).ne.nulibtable_number_groups) then
+<      stop "nulibtable_bremsstrahlung_range_species_range_energy: supplied array dimensions (2) is not commensurate with table"
+<   endif  
+<   if(size(eas,3).ne.nulibtable_number_groups) then
+<      stop "nulibtable_bermsstrahlung_range_species_range_energy: supplied array dimensions (3) is not commensurate with table"
+<   endif
+<   if(size(eas,4).ne.2) then
+<      stop "nulibtable_bremsstrahlung_range_species_range_energy: supplied array dimensions (4) is not commensurate with table"
+<   endif
+<   
+<   xltemp = log10(xtemp)
+<   if (xltemp.lt.nulibtable_logItemp_min) stop "temp below nulib bremsstrahlung table minimum temp"
+<   if (xltemp.gt.nulibtable_logItemp_max) stop "temp above nulib bremsstrahlung table maximum temp"  
+<   
+<   do i=1,3
+<   
+< 
+< 	  xln_N = log10(xn_N(i))
+< 	
+< 
+< 	  if (xln_N.lt.nulibtable_logn_N_min) stop "n_N below nulib bremsstrahlung table minimum n_N"
+< 	  if (xln_N.gt.nulibtable_logn_N_max) stop "n_N above nulib bremsstrahlung table maximum n_N"
+< 	
+< 	  xeas = 0.0d0
+< 	  call intp2d_many_mod(xltemp,xln_N,xeas,nulibtable_bremsstrahlung_Phi0,nulibtable_nItemp, &
+< 	       nulibtable_nn_N,eas_n1*eas_n2*eas_n2*2,nulibtable_logItemp, &
+< 	       nulibtable_logn_N)
+< 	
+< 	  index = 0
+< 	  do ins=1,nulibtable_number_species
+< 	     do ing_this=1,nulibtable_number_groups
+< 	        do ing_that=1,nulibtable_number_groups
+< 				if ( i .EQ. 3) then
+< 		           index = index + 1
+< 		           eas(ins,ing_this,ing_that,1) = eas(ins,ing_this,ing_that,1) + &
+< 													28.0d0/3.0d0*10.0d0**xeas(index)
+< 		           index = index + 1
+< 		           eas(ins,ing_this,ing_that,2) = eas(ins,ing_this,ing_that,2) + &
+< 													28.0d0/3.0d0*10.0d0**xeas(index)
+< 		        else 
+< 		           index = index + 1
+< 		           eas(ins,ing_this,ing_that,1) = eas(ins,ing_this,ing_that,1) + &
+< 										           10.0d0**xeas(index)
+< 		           index = index + 1
+< 		           eas(ins,ing_this,ing_that,2) = eas(ins,ing_this,ing_that,2) + &
+< 										           10.0d0**xeas(index)
+< 		        endif
+< 	        enddo
+< 	     enddo
+< 	  enddo
+<   enddo
+<   
+<   
+< end subroutine nulibtable_bremsstrahlung_range_species_range_energy2
+< 
+< !this takes temp,n_N, and return bremsstrahlungation phi0 over energy (both nus) range for a single species
+< subroutine nulibtable_bremsstrahlung_single_species_range_energy2(xtemp,xn_N, &
+<      lns,eas,eas_n1,eas_n2,eas_n3)
+< 
+<   use nulibtable
+<   implicit none
+< 
+<   real*8, intent(in) :: xtemp, xn_N(3) !inputs
+<   real*8 :: xltemp, xln_N !log versions
+<   integer, intent(in) :: lns,eas_n1,eas_n2,eas_n3
+<   real*8, intent(out) :: eas(eas_n1,eas_n2,eas_n3)
+<   integer :: ing_this,ing_that,i
+<   real*8 :: xeas(eas_n1*eas_n2*2)
+<   integer :: index
+<   real*8 :: energy_conversion = 1.60217733d-6*5.59424238d-55
+<   integer :: startindex,endindex
+< 
+<   if(size(eas,1).ne.nulibtable_number_groups) then
+<      stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (1) is not commensurate with table"
+<   endif  
+<   if(size(eas,2).ne.nulibtable_number_groups) then
+<      stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (2) is not commensurate with table"
+<   endif
+<   if(size(eas,3).ne.2) then
+<      stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (3) is not commensurate with table"
+<   endif
+< 
+<   xltemp = log10(xtemp)
+<   if (xltemp.lt.nulibtable_logItemp_min) stop "temp below nulib bremsstrahlung table minimum temp"
+<   if (xltemp.gt.nulibtable_logItemp_max) stop "temp above nulib bremsstrahlung table maximum temp"  
+<   
+<   eas = 0.0d0
+<   
+<   do i =1,3
+< 	  xln_N = log10(xn_N(i))
+< 	
+< 
+< 	  if (xln_N.lt.nulibtable_logn_N_min) stop "n_N below nulib bremsstrahlung table minimum n_N"
+< 	  if (xln_N.gt.nulibtable_logn_N_max) stop "n_N above nulib bremsstrahlung table maximum n_N"
+< 	
+< 	  startindex = (lns-1)*nulibtable_number_groups*nulibtable_number_groups*2+1
+< 	  endindex = startindex + nulibtable_number_groups*nulibtable_number_groups*2 - 1
+< !~         write(*,*) MAXVAL(nulibtable_bremsstrahlung_Phi0),MINVAL(nulibtable_bremsstrahlung_Phi0)
+< 	  xeas = 0.0d0
+< 	  call intp2d_many_mod(xltemp,xln_N,xeas,nulibtable_bremsstrahlung_Phi0(:,:,startindex:endindex), &
+< 	       nulibtable_nItemp,nulibtable_nn_N,eas_n1*eas_n2*2,nulibtable_logItemp,nulibtable_logn_N)
+< !~         write(*,*) MAXVAL(xeas),MINVAL(xeas)
+< !~     stop
+< 	  index = 0
+< 	  do ing_this=1,nulibtable_number_groups
+< 	     do ing_that=1,nulibtable_number_groups
+< 		     if (i .eq. 3) then 
+< 		        index = index + 1
+< 		        eas(ing_this,ing_that,1) = eas(ing_this,ing_that,1) + &
+< 											28.0d0/3.0d0*10.0d0**xeas(index)
+< 		        index = index + 1
+< 		        eas(ing_this,ing_that,2) = eas(ing_this,ing_that,2) + &
+< 									        28.0d0/3.0d0*10.0d0**xeas(index)
+< 		     else
+< 		        index = index + 1
+< 		        eas(ing_this,ing_that,1) = eas(ing_this,ing_that,1) + &
+< 									        10.0d0**xeas(index)
+< 		        index = index + 1
+< 		        eas(ing_this,ing_that,2) = eas(ing_this,ing_that,2) + &
+<                                            10.0d0**xeas(index)
+< 		     endif
+< 	     enddo
+< 	  enddo
+<   enddo
+< 
+<   if (ANY(eas <0.0d0)) then
+<     stop "nulib : eas_brem <0"
+<   endif
+< 
+<    
+<   
+< end subroutine nulibtable_bremsstrahlung_single_species_range_energy2
+<   
+< !this takes temp,n_N, and return gang bremsstrahlungation phi0 over energy (both nus) range for a single species
+< subroutine nulibtable_bremsstrahlung_gang_single_species_range_energy2(xtemp,xn_N,xYe, &
+<      lns,eas,eas_n1,eas_n2,eas_n3)
+< 
+<   use nulibtable
+<   implicit none
+< 
+<   real*8, intent(in) :: xtemp, xn_N,xYe !inputs
+<   real*8 :: xltemp, xln_N,xlYe !log versions
+<   integer, intent(in) :: lns,eas_n1,eas_n2,eas_n3
+<   real*8, intent(out) :: eas(eas_n1,eas_n2,eas_n3)
+<   integer :: ing_this,ing_that
+<   real*8 :: xeas(eas_n1*eas_n2*2)
+<   integer :: index
+<   real*8 :: energy_conversion = 1.60217733d-6*5.59424238d-55
+<   integer :: startindex,endindex
+< 
+<   if(size(eas,1).ne.nulibtable_number_groups) then
+<      stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (1) is not commensurate with table"
+<   endif  
+<   if(size(eas,2).ne.nulibtable_number_groups) then
+<      stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (2) is not commensurate with table"
+<   endif
+<   if(size(eas,3).ne.2) then
+<      stop "nulibtable_bremsstrahlung_single_species_range_energy: supplied array dimensions (3) is not commensurate with table"
+<   endif
+< 
+<   xltemp = log10(xtemp)
+<   if (xltemp.lt.nulibtable_logItemp_min) stop "temp below nulib bremsstrahlung table minimum temp"
+<   if (xltemp.gt.nulibtable_logItemp_max) stop "temp above nulib bremsstrahlung table maximum temp"  
+<   
+<   eas = 0.0d0
+<   xln_N = log10(xn_N)
+<   xlYe = log10(xYe)
+< 	
+< 
+<   if (xln_N.lt.nulibtable_logn_N_min) stop "n_N below nulib bremsstrahlung table minimum n_N"
+<   if (xln_N.gt.nulibtable_logn_N_max) stop "n_N above nulib bremsstrahlung table maximum n_N"
+< 
+<   if (xlYe.gt.nulibtable_logYe_min) then 
+<        write(*,*) xlYe,nulibtable_logYe_min  
+<        stop "Ye below nulib bremsstrahlung table minimum Ye"
+<   endif
+<   if (xlYe.lt.nulibtable_logYe_max) then 
+<        write(*,*) xlYe,nulibtable_logYe_max
+<          stop "Ye above nulib bremsstrahlung table maximum Ye"
+<   endif
+<   startindex = (lns-1)*nulibtable_number_groups*nulibtable_number_groups*2+1
+<   endindex = startindex + nulibtable_number_groups*nulibtable_number_groups*2 - 1
+< !~         write(*,*) MAXVAL(nulibtable_bremsstrahlung_Phi0),MINVAL(nulibtable_bremsstrahlung_Phi0)
+<   xeas = 0.0d0
+<   call intp3d_many_mod(xltemp,xln_N,xlYe,xeas,nulibtable_bremsstrahlung_gang_Phi0(:,:,:,startindex:endindex), &
+<        nulibtable_nItemp,nulibtable_nn_N,nulibtable_nIYe,eas_n1*eas_n2*2,&
+<        nulibtable_logItemp,nulibtable_logn_N,nulibtable_logYe)
+<        
+<   index = 0
+<   do ing_this=1,nulibtable_number_groups
+<      do ing_that=1,nulibtable_number_groups
+<                 index = index + 1
+<                 eas(ing_this,ing_that,1) = eas(ing_this,ing_that,1) + &
+<                                            10.0d0**xeas(index)
+<                 index = index + 1
+<                 eas(ing_this,ing_that,2) = eas(ing_this,ing_that,2) + &
+<                                            10.0d0**xeas(index)
+< 
+<      enddo
+<   enddo
+< 
+< 
+<   if (ANY(eas <0.0d0)) then
+<     stop "nulib : eas_brem <0"
+<   endif
+< 
+<    
+<   
+< end subroutine nulibtable_bremsstrahlung_gang_single_species_range_energy2
+<   
+< !~ subroutine gang_table_range_energy(xtemp,xn_N,xYe, &
+< !~  brem_array)
+< 	
+< !~ 	use nulibtable
+< 	
+< !~ 	implicit none
+< 	
+< 	
+< !~ 	real*8, intent(in) :: xtemp,xn_N,xYe
+< !~ 	real*8, intent(out) :: brem_array(nulibtable_number_groups,nulibtable_number_groups,2)
+< 	
+< !~ 	integer :: i,j,indx
+< !~ 	real*8 :: temp_array(25) = (/(i, i=2,50, 2)/)
+< !~ 	real*8 :: Ye_array(26) = (/(i, i=0,50,2)/)/100.0d0
+< !~ 	real*8 :: n_array(37)
+< !~ 	real*8 :: n_fem,dx
+< !~ 	real*8 :: om_array(40) = (/(i,i = 1,40,1)/)/10.0d0 -1.4d0
+< !~ 	real*8 :: omega
+< !~ 	real*8 :: eas(40)
+< !~     real*8,parameter :: nulib_energy_gf = 1.60217733d-6*5.59424238d-55
+< !~ 	real*8, parameter :: G_f = 1.16637d-11*(1.97326966d-11)  ! Mev-1  cm 
+< !~     real*8,parameter :: nulib_kernel_gf = 6.77140812d-06**3/2.03001708d+05 
+< !~ 	real*8, parameter :: hbarc_mevcm = 1.97326966d-11
+< !~     real*8, parameter :: c_light = 29979245800.0d0 
+< !~ 	n_array(1:9) = (/(i, i=1,9, 1)/)/1.0d4
+< !~ 	n_array(10:18) = (/(i, i=1,9, 1)/)/1.0d3
+< !~ 	n_array(19:27) = (/(i, i=1,9, 1)/)/1.0d2
+< !~ 	n_array(28:37) = (/(i, i=1,10, 1)/)/1.0d1
+< 	
+< !~ 	eas = 0.0d0
+< !~ 	n_fem = xn_N /(1.0d13)**3 
+< !~ 	if ( n_fem .GT. maxval(n_array) .OR. n_fem .LT. minval(n_array)) then 
+< 
+< !~ 	else
+< !~ 		call intp3d_gang_table( xtemp, n_fem, xYe, eas, gang_table, 25, 37, 26, 40, temp_array, n_array, Ye_array)
+< !~ 	endif
+< !~ 	brem_array = 0.0d0
+< !~ 	do i = 1,nulibtable_number_groups
+< !~ 		do j = 1, nulibtable_number_groups
+< !~ 			omega = log10((nulibtable_energies(i)+nulibtable_energies(j))/nulib_energy_gf)
+< !~ 			if ( omega .LT. maxval(om_array) .AND. omega .GT. minval(om_array)) then
+< !~ 				dx = 10.0d0
+< !~ 				indx= 1+ int((omega-om_array(1))*dx)
+< !~ 				brem_array(i,j,1) = eas(indx) * xn_N*(1.26d0/2.0d0)**2*G_f**2*3.0d0 &  ! production
+< !~ 									* exp(-10**(omega)/xtemp)*nulib_kernel_gf*hbarc_mevcm**3*c_light
+< !~ 				brem_array(i,j,2) = eas(indx) * xn_N*(1.26d0/2.0d0)**2*G_f**2*3.0d0*nulib_kernel_gf&
+< !~ 									*hbarc_mevcm**3*c_light!annihilation					
+< !~ 			endif 
+< !~ 		enddo
+< !~ 	enddo
+< !~ 	stop
+< !~ end subroutine 
+Binary files ./nulibtable/nulibtable.a and ../../GR1D_origin/GR1D/src/nulibtable/nulibtable.a differ
+Binary files ./nulibtable/nulibtable.mod and ../../GR1D_origin/GR1D/src/nulibtable/nulibtable.mod differ
+Binary files ./nulibtable/nulibtable.o and ../../GR1D_origin/GR1D/src/nulibtable/nulibtable.o differ
+diff -r ./nulibtable/nulibtable_reader.F90 ../../GR1D_origin/GR1D/src/nulibtable/nulibtable_reader.F90
+2,3c2
+< subroutine nulibtable_reader(filename,include_Ielectron,include_epannihil_kernels, &
+< 							include_bremsstrahlung_kernels,include_gang_kernels)
+---
+> subroutine nulibtable_reader(filename,include_Ielectron,include_epannihil_kernels)
+9,13c8,10
+<   character(*),intent(IN) :: filename
+<   logical,intent(IN) :: include_Ielectron
+<   logical,intent(IN) :: include_epannihil_kernels
+<   logical,intent(IN) :: include_bremsstrahlung_kernels
+<   logical,intent(IN) :: include_gang_kernels
+---
+>   character(*) :: filename
+>   logical :: include_Ielectron
+>   logical :: include_epannihil_kernels
+18c15
+<   integer(HSIZE_T) :: dims1(1), dims2(2), dims3(3), dims4(4), dims5(5), dims6(6),dims7(7)!, etc....
+---
+>   integer(HSIZE_T) :: dims1(1), dims2(2), dims3(3), dims4(4), dims5(5), dims6(6)!, etc....
+21,22c18,19
+<   real*8, allocatable :: nulibtable_temp(:,:,:,:,:),gang_temp(:,:,:,:)
+<   real*8, allocatable :: nulibtable_temp2(:,:,:,:,:,:),nulibtable_temp3(:,:,:,:,:,:,:)
+---
+>   real*8, allocatable :: nulibtable_temp(:,:,:,:,:)
+>   real*8, allocatable :: nulibtable_temp2(:,:,:,:,:,:)
+207,208c204
+<   if (include_Ielectron.or.include_epannihil_kernels.or.include_bremsstrahlung_kernels&
+< 		.or.include_gang_kernels) then
+---
+>   if (include_Ielectron.or.include_epannihil_kernels) then
+223,234d218
+<      
+<      call h5dopen_f(file_id, "In_N",dset_id, error)
+<      call h5dread_f(dset_id, H5T_NATIVE_INTEGER, nulibtable_nn_N, dims1, error)
+<      call h5dclose_f(dset_id, error)
+<      cerror = cerror + error
+<      
+<     if (include_gang_kernels) then
+<         call h5dopen_f(file_id, "IYe",dset_id, error)
+<         call h5dread_f(dset_id, H5T_NATIVE_INTEGER, nulibtable_nIYe, dims1, error)
+<         call h5dclose_f(dset_id, error)
+<         cerror = cerror + error
+<     endif
+238,239d221
+<      allocate(nulibtable_logn_N(nulibtable_nn_N))
+<      allocate(nulibtable_logYe(nulibtable_nIYe))
+253,272c235,236
+<      cerror = cerror + error
+<      write(*,*) MAXVAL(nulibtable_logIeta)
+<      
+<      if (include_bremsstrahlung_kernels .or. include_gang_kernels) then 
+< 	     rank = 1
+< 	     dims1(1) = nulibtable_nn_N
+< 	     call h5dopen_f(file_id, "n_N_Ipoints", dset_id, error)
+< 	     call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,nulibtable_logn_N, dims1, error)
+< 	     call h5dclose_f(dset_id, error)
+< 	     cerror = cerror + error
+< 	 endif
+<      if (include_gang_kernels) then 
+< 	     rank = 1
+< 	     dims1(1) = nulibtable_nIYe
+< 	     call h5dopen_f(file_id, "Ye_Ipoints", dset_id, error)
+< 	     call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,nulibtable_logYe, dims1, error)
+< 	     call h5dclose_f(dset_id, error)
+< 	     cerror = cerror + error
+< 	 endif
+< 	 
+---
+>      cerror = cerror + error   
+> 
+280,293d243
+<      if (include_bremsstrahlung_kernels .or. include_gang_kernels) then 
+< 	     nulibtable_logn_N = log10(nulibtable_logn_N) 
+< 	     nulibtable_logn_N_min = nulibtable_logn_N(1)
+< 	     nulibtable_logn_N_max = nulibtable_logn_N(nulibtable_nn_N)
+<      endif
+<      
+<      if (include_bremsstrahlung_kernels .or. include_gang_kernels) then 
+< 		 nulibtable_logYe = log10(nulibtable_logYe) 
+< 	     nulibtable_logYe_min = nulibtable_logYe(1)
+< 	     nulibtable_logYe_max = nulibtable_logYe(nulibtable_nIYe)
+<      endif
+<      
+<      
+<      
+346a297
+> 
+400,479d350
+<   
+<   
+<   if (include_bremsstrahlung_kernels) then
+< 
+<      rank = 6
+<      dims6(1) = nulibtable_nItemp
+<      dims6(2) = nulibtable_nn_N
+<      dims6(3) = nulibtable_number_groups
+<      dims6(4) = nulibtable_number_species
+<      dims6(5) = nulibtable_number_groups
+<      dims6(6) = 2
+<      write(*,*) "brem dim",dims6(1),dims6(2)
+<      if (dims6(3).ne.dims6(5)) stop "bremsstrahlung kernels must be square"
+< 
+<      allocate(nulibtable_temp2(dims6(1),dims6(2),dims6(3),dims6(4),dims6(5),dims6(6)))
+<      allocate(nulibtable_bremsstrahlung_Phi0(dims6(1),dims6(2),dims6(4)*dims6(3)*dims6(3)*2))
+<      call h5dopen_f(file_id, "bremsstrahlung_phi0", dset_id, error)
+<      call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,nulibtable_temp2, dims6, error)
+<      call h5dclose_f(dset_id, error)
+<      cerror = cerror + error   
+< 
+<      index = 0
+<      do i=1,nulibtable_number_species !species
+<         do j=1,nulibtable_number_groups !neutrino E
+<            do k=1,nulibtable_number_groups !otherne E
+<               index = index + 1
+<               nulibtable_bremsstrahlung_Phi0(:,:,index) = log10(max(1.0d-200,ABS(nulibtable_temp2(:,:,j,i,k,1))))
+<               index = index + 1
+<               nulibtable_bremsstrahlung_Phi0(:,:,index) = log10(max(1.0d-200,ABS(nulibtable_temp2(:,:,j,i,k,2))))
+<            enddo
+<         enddo
+<      enddo
+< !~     write(*,*) MAXVAL(nulibtable_bremsstrahlung_Phi0)
+< 
+< 
+<      deallocate(nulibtable_temp2)
+< 
+<   endif
+< 
+< 
+<   if (include_gang_kernels) then
+< 
+<      rank = 7
+<      dims7(1) = nulibtable_nItemp
+<      dims7(2) = nulibtable_nn_N
+<      dims7(3) = nulibtable_nIYe
+<      dims7(4) = nulibtable_number_groups
+<      dims7(5) = nulibtable_number_species
+<      dims7(6) = nulibtable_number_groups
+<      dims7(7) = 2
+< !~      write(*,*) "brem dim",dims6(1),dims6(2)
+<      if (dims7(4).ne.dims7(6)) stop "bremsstrahlung kernels must be square"
+< 
+<      allocate(nulibtable_temp3(dims7(1),dims7(2),dims7(3),dims7(4),dims7(5),dims7(6),dims7(7)))
+<      allocate(nulibtable_bremsstrahlung_gang_Phi0(dims7(1),dims7(2),dims7(3),dims7(5)*dims7(4)*dims7(4)*2))
+<      call h5dopen_f(file_id, "bremsstrahlung_phi0_gang", dset_id, error)
+<      call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,nulibtable_temp3, dims7, error)
+<      call h5dclose_f(dset_id, error)
+<      cerror = cerror + error   
+< 
+<      index = 0
+<      do i=1,nulibtable_number_species !species
+<         do j=1,nulibtable_number_groups !neutrino E
+<            do k=1,nulibtable_number_groups !otherne E
+<               index = index + 1
+<               nulibtable_bremsstrahlung_gang_Phi0(:,:,:,index) = log10(max(1.0d-200,ABS(nulibtable_temp3(:,:,:,j,i,k,1))))
+<               index = index + 1
+<               nulibtable_bremsstrahlung_gang_Phi0(:,:,:,index) = log10(max(1.0d-200,ABS(nulibtable_temp3(:,:,:,j,i,k,2))))
+<            enddo
+<         enddo
+<      enddo
+< !~     write(*,*) MAXVAL(nulibtable_bremsstrahlung_Phi0)
+< 
+< 
+<      deallocate(nulibtable_temp3)
+< 
+<   endif
+< 
+< 
+< 
+490,524d360
+< !~   if ( include_gang_kernels) then 
+< !~   !open HDF5 file, given filename                                                                                             
+< !~ 	  call h5open_f(error)
+< !~ 	  if (error.ne.0) then
+< !~ 	     stop "Error reading in gang file"
+< !~ 	  endif
+< 	  
+< !~ 	  call h5fopen_f(trim(adjustl("Data.h5")), &
+< !~ 	       H5F_ACC_RDONLY_F,file_id,error)
+< !~ 	  if (error.ne.0) then
+< !~ 	     write(*,*) trim(adjustl("Data.h5"))
+< !~ 	     stop "Error reading in gang table"
+< !~ 	  endif
+< 	  
+< !~ 	rank = 4
+< !~ 	dims4(1) = 25
+< !~ 	dims4(2) = 37
+< !~ 	dims4(3) = 26
+< !~ 	dims4(4) = 40
+< !~ 	allocate(gang_table(dims4(1),dims4(2),dims4(3),dims4(4)))
+< !~ 	call h5dopen_f(file_id, "kernel", dset_id, error)
+< !~ 	call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,gang_table, dims4, error)
+< !~     call h5dclose_f(dset_id, error)
+< !~     cerror = cerror + error   
+< 
+< !~ 	if (cerror.ne.0) then
+< !~ 	     write (*,*) "We have errors on reading Gang file", cerror
+< !~ 	     stop
+< !~ 	endif  
+< 	
+< !~ 	call h5fclose_f(file_id,error)
+< !~ 	call h5close_f(error)
+< 
+< !~   endif
+<   
+Binary files ./nulibtable/nulibtable_reader.o and ../../GR1D_origin/GR1D/src/nulibtable/nulibtable_reader.o differ
+Binary files ./outinfo.o and ../../GR1D_origin/GR1D/src/outinfo.o differ
+Binary files ./output.o and ../../GR1D_origin/GR1D/src/output.o differ
+Binary files ./output_control.o and ../../GR1D_origin/GR1D/src/output_control.o differ
+Binary files ./poly_eos_module.mod and ../../GR1D_origin/GR1D/src/poly_eos_module.mod differ
+Binary files ./ppm.o and ../../GR1D_origin/GR1D/src/ppm.o differ
+Binary files ./press_sources.o and ../../GR1D_origin/GR1D/src/press_sources.o differ
+Binary files ./prim2con.o and ../../GR1D_origin/GR1D/src/prim2con.o differ
+Binary files ./problem.o and ../../GR1D_origin/GR1D/src/problem.o differ
+Binary files ./reconstruct.o and ../../GR1D_origin/GR1D/src/reconstruct.o differ
+Binary files ./restart_H5.o and ../../GR1D_origin/GR1D/src/restart_H5.o differ
+Binary files ./sedov.o and ../../GR1D_origin/GR1D/src/sedov.o differ
+Binary files ./shocktube.o and ../../GR1D_origin/GR1D/src/shocktube.o differ
+diff -r ./start.F90 ../../GR1D_origin/GR1D/src/start.F90
+61,62c61,62
+< !~   rmstring="rm -rf "//trim(adjustl(outdir))//"/*"
+< !~   call system(rmstring)
+---
+>   rmstring="rm -rf "//trim(adjustl(outdir))//"/*"
+>   call system(rmstring)
+Binary files ./start.o and ../../GR1D_origin/GR1D/src/start.o differ
+Binary files ./timers.mod and ../../GR1D_origin/GR1D/src/timers.mod differ
+Binary files ./timers.o and ../../GR1D_origin/GR1D/src/timers.o differ
+Binary files ./tools.o and ../../GR1D_origin/GR1D/src/tools.o differ
+Binary files ./ye_of_rho.mod and ../../GR1D_origin/GR1D/src/ye_of_rho.mod differ
+Binary files ./ye_of_rho.o and ../../GR1D_origin/GR1D/src/ye_of_rho.o differ

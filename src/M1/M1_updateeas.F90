@@ -44,7 +44,9 @@ subroutine M1_updateeas
 
      
      do k=2,M1_imaxradii+ghosts1-1
-        
+    
+   !     write(*,*) nulibtable_logtemp_max
+    
         xrho = rho(k)/rho_gf
         xtemp = temp(k)
         xye = ye(k)
@@ -73,10 +75,10 @@ subroutine M1_updateeas
         endif
         
         !set new eas variables
-        if (include_epannihil_kernels) then
-           tempspectrum(3,:,2) = 0.0d0
-           tempspectrum(3,:,1) = 0.0d0
-        endif
+!        if (include_epannihil_kernels) then
+!           tempspectrum(3,:,2) = 0.0d0
+!           tempspectrum(3,:,1) = 0.0d0
+!        endif
 
         if (.true.) then
            eas(k,:,:,2) = tempspectrum(:,:,2)
@@ -124,7 +126,7 @@ subroutine M1_updateeas
         ! get number density if bremsstrahlung is turned on
         
         if (include_Ielectron_exp.or.include_Ielectron_imp.or.include_epannihil_kernels &
-			.or. include_bremsstrahlung_kernels) then
+		.or. include_bremsstrahlung_kernels.or.include_gang_kernels) then
            keytemp = 1 !keep temperature, not resetting any hydro variables
            keyerr = 0       
            call nuc_eos_full(xrho,xtemp,xye,eosdummy(1),eosdummy(2),eosdummy(3), &
@@ -163,7 +165,10 @@ subroutine M1_updateeas
                  write(*,*) xrho,xtemp,xye,xeta
                  stop "M1_update_eas: Ieta too low"
               endif
-              if (log10(xtemp).gt.nulibtable_logItemp_max) stop "M1_update_eas: temp too high"
+              if (log10(xtemp).gt.nulibtable_logItemp_max) then 
+                        write(*,*) xtemp, log10(xtemp),nulibtable_logItemp_max
+                        stop "M1_update_eas: temp too high"
+              endif
               if (log10(xeta).gt.nulibtable_logIeta_max) then
                  write(*,*) xrho,xtemp,xye,xeta,nulibtable_logIeta_max,k
                  stop "M1_update_eas: Ieta too high"
@@ -223,15 +228,21 @@ subroutine M1_updateeas
         !get bremsstrahlung kernels for i.eq.3 only, if turned on
         if (include_bremsstrahlung_kernels) then
            bremsstrahlung_tempspectrum = 0.0d0
-           if (log10(xrho).lt.nulibtable_logrho_min) then
-              bremsstrahlung_tempspectrum = 0.0d0
+           !if (log10(xrho).lt.nulibtable_logrho_min) then
+           if (log10(xrho) .lt. 11.22d0 .or. log10(xrho) .gt. 15.22d0 &
+                .or. xtemp .LT. 2.0d0 .or. xtemp .GT. 50.0d0 .or.  &
+                xye .GT. 0.5d0) then  
+                  bremsstrahlung_tempspectrum = 0.0d0
            else
               if (log10(xtemp).lt.nulibtable_logItemp_min) stop "M1_update_eas: Itemp too low"
               if (ANY(log10(xn_N).lt.nulibtable_logn_N_min)) then
                  write(*,*) xrho,xtemp,xye,xn_N
                  stop "M1_update_eas: n_N too low"
               endif
-              if (log10(xtemp).gt.nulibtable_logItemp_max) stop "M1_update_eas: temp too high"
+              if (log10(xtemp).gt.nulibtable_logItemp_max) then 
+                 write(*,*) xtemp, log10(xtemp),nulibtable_logItemp_max
+                 stop "M1_update_eas: temp too high"
+              endif
               if (ANY(log10(xn_N).gt.nulibtable_logn_N_max)) then
                  write(*,*) xrho,xtemp,xye,xn_N,nulibtable_logn_N_max,k
                  stop "M1_update_eas: n_N too high"
@@ -261,49 +272,61 @@ subroutine M1_updateeas
            
            !set new ep annihilation variables
            bremsstrahlung(k,:,:,:,:) = bremsstrahlung_tempspectrum(:,:,:,:)
-       
-!~        if (xrho .GT. 1.0d13) then
-!~ 	        open (unit = 2, file = "brem.txt")
-!~ 	        write(2,*) xrho,xtemp,xye,xeta,xn_N(1),xn_N(2),xn_N(3)
-!~ 	        do i = 1,number_groups
-!~ 	        integrator=0.0d0
-!~ 	        integrator2=0.0d0
-	        
-!~ 				!energy integration loop
-!~ 				do j = 1,number_groups
-!~ 				write(*,*) i,j
-!~ 					integrator= integrator +(2.0d0*pi)  &
-!~ 					*singlespecies_bremsstrahlung_tempspectrum(i,j,1) &
-!~ 						* nulibtable_energies(j) **2 * nulibtable_ewidths(j)
-						
-!~ 					integrator2= integrator2 + (2.0d0*pi) &
-!~ 					 *singlespecies_epannihil_tempspectrum(i,j,1) &
-!~ 						* nulibtable_energies(j) **2 * nulibtable_ewidths(j)
-!~ 				enddo
-				
-!~ 				! write the energy & values in brem.txt
-!~ 				write(2,*) nulibtable_energies(i) & 
-!~ 							,integrator*(4.0d0*pi)  /(2.0d0 * pi *hbarc_mevcm)**6 &
-!~ 						   * nulibtable_energies(i)**3 * 1d-36 &
-!~ 							, integrator2 *(4.0d0*pi) /(2.0d0 * pi *hbarc_mevcm)**6 &
-!~ 							* nulibtable_energies(i)**3 * 1d-36
-!~ 			enddo
-!~ 			close(2)
-!~ 			write(*,*) nulibtable_energies
-!~ 			write(*,*) nulibtable_ewidths
-!~ 			write(*,*) singlespecies_bremsstrahlung_tempspectrum(1,:,1)
-!~ 			write(*,*)
-!~ 			write(*,*) singlespecies_epannihil_tempspectrum(:,1,1)
-!~ 			write(*,*) number_groups
-!~ 			write(*,*) hbarc_mevcm,pi
-!~ 			stop
-!~         endif
 
         endif
+        
+               
+        if (include_gang_kernels) then 
+              bremsstrahlung_tempspectrum = 0.0d0
+              singlespecies_bremsstrahlung_tempspectrum = 0.0d0
+              if (log10(xtemp).lt.nulibtable_logItemp_min) then 
+                    write(*,*) xtemp,log10(xtemp)   
+                    stop "M1_update_eas: Itemp too low"
+              endif 
+              if (log10(xye).gt.nulibtable_logYe_min .or. &
+                  log10(xye).lt.nulibtable_logYe_max .or. &
+                log10(xrho/(m_amu*mev_to_gram)).lt.nulibtable_logn_N_min .or. &
+                log10(xrho/(m_amu*mev_to_gram)).gt.nulibtable_logn_N_max .or. &
+                log10(xtemp).gt.nulibtable_logItemp_max .or. &
+                log10(xtemp).lt.nulibtable_logItemp_min) then 
+              else
+              
+                  if (log10(xrho/(m_amu*mev_to_gram)).lt.nulibtable_logn_N_min) then
+                        write(*,*) xrho,xtemp,xye,xrho/(m_amu*mev_to_gram),nulibtable_logn_N_min,k
+                         stop "M1_update_eas: n_N too low"
+                  endif
+                 if (log10(xtemp).gt.nulibtable_logItemp_max) then 
+                           write(*,*) xtemp,log10(xtemp)
+                        stop "M1_update_eas: temp too high"
+                endif 
 
-     enddo
+                if (log10(xrho/(m_amu*mev_to_gram)).gt.nulibtable_logn_N_max) then
+                         write(*,*) xrho,xtemp,xye,xrho/(m_amu*mev_to_gram),nulibtable_logn_N_max,k
+                        stop "M1_update_eas: n_N too high"
+                endif
+                i=3
+                call nulibtable_bremsstrahlung_gang_single_species_range_energy2(xtemp,&
+                                        xrho/(m_amu*mev_to_gram),xYe, &
+                            i,singlespecies_bremsstrahlung_tempspectrum,number_groups,number_groups,2)
+
+                bremsstrahlung_tempspectrum(1,:,:,:) =singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+                bremsstrahlung_tempspectrum(2,:,:,:) =singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+                bremsstrahlung_tempspectrum(3,:,:,:) =singlespecies_bremsstrahlung_tempspectrum(:,:,:)
+
+              endif  
+              bremsstrahlung(k,:,:,:,:) =bremsstrahlung_tempspectrum(:,:,:,:)
+              
+        
+
+              if ( ANY(singlespecies_bremsstrahlung_tempspectrum < 0.0d0) ) then
+                    write(*,*)  singlespecies_bremsstrahlung_tempspectrum
+                    write(*,*) xrho,xtemp,xye,xn_N,nulibtable_logn_N_max,k
+                    stop "brem gang <0"
+              endif
+        endif
+    enddo
      !$OMP END PARALLEL DO! end do
-
+      
   else if (M1_testcase_number.ge.2.and.M1_testcase_number.le.9) then
      !this is taken care of
   else

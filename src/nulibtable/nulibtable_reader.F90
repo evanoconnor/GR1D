@@ -1,24 +1,25 @@
 !-*-f90-*-
 subroutine nulibtable_reader(filename,include_Ielectron,include_epannihil_kernels, &
-							include_bremsstrahlung_kernels)
+							include_bremsstrahlung_kernels,include_gang_kernels)
   
   use nulibtable
   use hdf5
   implicit none
 
-  character(*) :: filename
-  logical :: include_Ielectron
-  logical :: include_epannihil_kernels
-  logical :: include_bremsstrahlung_kernels
+  character(*),intent(IN) :: filename
+  logical,intent(IN) :: include_Ielectron
+  logical,intent(IN) :: include_epannihil_kernels
+  logical,intent(IN) :: include_bremsstrahlung_kernels
+  logical,intent(IN) :: include_gang_kernels
 
   !H5 stuff
   integer :: error,rank,cerror
   integer(HID_T) :: file_id,dset_id,dspace_id
-  integer(HSIZE_T) :: dims1(1), dims2(2), dims3(3), dims4(4), dims5(5), dims6(6)!, etc....
+  integer(HSIZE_T) :: dims1(1), dims2(2), dims3(3), dims4(4), dims5(5), dims6(6),dims7(7)!, etc....
 
   !local
-  real*8, allocatable :: nulibtable_temp(:,:,:,:,:)
-  real*8, allocatable :: nulibtable_temp2(:,:,:,:,:,:)
+  real*8, allocatable :: nulibtable_temp(:,:,:,:,:),gang_temp(:,:,:,:)
+  real*8, allocatable :: nulibtable_temp2(:,:,:,:,:,:),nulibtable_temp3(:,:,:,:,:,:,:)
   real*8 :: timestamp
   integer :: startindex,endindex,index
   integer :: i,j,k,l,m
@@ -203,7 +204,8 @@ subroutine nulibtable_reader(filename,include_Ielectron,include_epannihil_kernel
 
   nulibtable_number_easvariables = 3
 
-  if (include_Ielectron.or.include_epannihil_kernels.or.include_bremsstrahlung_kernels) then
+  if (include_Ielectron.or.include_epannihil_kernels.or.include_bremsstrahlung_kernels&
+		.or.include_gang_kernels) then
 
      !read scalars (rank=1, dims1(1) = 1)
      rank = 1
@@ -223,10 +225,18 @@ subroutine nulibtable_reader(filename,include_Ielectron,include_epannihil_kernel
      call h5dread_f(dset_id, H5T_NATIVE_INTEGER, nulibtable_nn_N, dims1, error)
      call h5dclose_f(dset_id, error)
      cerror = cerror + error
+     
+    if (include_gang_kernels) then
+        call h5dopen_f(file_id, "IYe",dset_id, error)
+        call h5dread_f(dset_id, H5T_NATIVE_INTEGER, nulibtable_nIYe, dims1, error)
+        call h5dclose_f(dset_id, error)
+        cerror = cerror + error
+    endif
 
      allocate(nulibtable_logItemp(nulibtable_nItemp))
      allocate(nulibtable_logIeta(nulibtable_nIeta))
      allocate(nulibtable_logn_N(nulibtable_nn_N))
+     allocate(nulibtable_logYe(nulibtable_nIYe))
 
      rank = 1
      dims1(1) = nulibtable_nItemp
@@ -243,16 +253,23 @@ subroutine nulibtable_reader(filename,include_Ielectron,include_epannihil_kernel
      cerror = cerror + error
      write(*,*) MAXVAL(nulibtable_logIeta)
      
-     if (include_bremsstrahlung_kernels) then 
+     if (include_bremsstrahlung_kernels .or. include_gang_kernels) then 
 	     rank = 1
 	     dims1(1) = nulibtable_nn_N
 	     call h5dopen_f(file_id, "n_N_Ipoints", dset_id, error)
 	     call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,nulibtable_logn_N, dims1, error)
 	     call h5dclose_f(dset_id, error)
 	     cerror = cerror + error
-!~          write(*,*) MAXVAL(nulibtable_logn_N)
 	 endif
-!~         write(*,*) MAXVAL(nulibtable_logn_N)
+     if (include_gang_kernels) then 
+	     rank = 1
+	     dims1(1) = nulibtable_nIYe
+	     call h5dopen_f(file_id, "Ye_Ipoints", dset_id, error)
+	     call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,nulibtable_logYe, dims1, error)
+	     call h5dclose_f(dset_id, error)
+	     cerror = cerror + error
+	 endif
+	 
      nulibtable_logItemp = log10(nulibtable_logItemp) 
      nulibtable_logItemp_min = nulibtable_logItemp(1)
      nulibtable_logItemp_max = nulibtable_logItemp(nulibtable_nItemp)
@@ -260,10 +277,16 @@ subroutine nulibtable_reader(filename,include_Ielectron,include_epannihil_kernel
      nulibtable_logIeta_min = nulibtable_logIeta(1)
      nulibtable_logIeta_max = nulibtable_logIeta(nulibtable_nIeta)
      
-     if (include_bremsstrahlung_kernels) then 
-		 nulibtable_logn_N = log10(nulibtable_logn_N) 
+     if (include_bremsstrahlung_kernels .or. include_gang_kernels) then 
+	     nulibtable_logn_N = log10(nulibtable_logn_N) 
 	     nulibtable_logn_N_min = nulibtable_logn_N(1)
 	     nulibtable_logn_N_max = nulibtable_logn_N(nulibtable_nn_N)
+     endif
+     
+     if (include_bremsstrahlung_kernels .or. include_gang_kernels) then 
+		 nulibtable_logYe = log10(nulibtable_logYe) 
+	     nulibtable_logYe_min = nulibtable_logYe(1)
+	     nulibtable_logYe_max = nulibtable_logYe(nulibtable_nIYe)
      endif
      
      
@@ -390,7 +413,6 @@ subroutine nulibtable_reader(filename,include_Ielectron,include_epannihil_kernel
 
      allocate(nulibtable_temp2(dims6(1),dims6(2),dims6(3),dims6(4),dims6(5),dims6(6)))
      allocate(nulibtable_bremsstrahlung_Phi0(dims6(1),dims6(2),dims6(4)*dims6(3)*dims6(3)*2))
-!~     write(*,*) dims6
      call h5dopen_f(file_id, "bremsstrahlung_phi0", dset_id, error)
      call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,nulibtable_temp2, dims6, error)
      call h5dclose_f(dset_id, error)
@@ -414,6 +436,48 @@ subroutine nulibtable_reader(filename,include_Ielectron,include_epannihil_kernel
 
   endif
 
+
+  if (include_gang_kernels) then
+
+     rank = 7
+     dims7(1) = nulibtable_nItemp
+     dims7(2) = nulibtable_nn_N
+     dims7(3) = nulibtable_nIYe
+     dims7(4) = nulibtable_number_groups
+     dims7(5) = nulibtable_number_species
+     dims7(6) = nulibtable_number_groups
+     dims7(7) = 2
+!~      write(*,*) "brem dim",dims6(1),dims6(2)
+     if (dims7(4).ne.dims7(6)) stop "bremsstrahlung kernels must be square"
+
+     allocate(nulibtable_temp3(dims7(1),dims7(2),dims7(3),dims7(4),dims7(5),dims7(6),dims7(7)))
+     allocate(nulibtable_bremsstrahlung_gang_Phi0(dims7(1),dims7(2),dims7(3),dims7(5)*dims7(4)*dims7(4)*2))
+     call h5dopen_f(file_id, "bremsstrahlung_phi0_gang", dset_id, error)
+     call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,nulibtable_temp3, dims7, error)
+     call h5dclose_f(dset_id, error)
+     cerror = cerror + error   
+
+     index = 0
+     do i=1,nulibtable_number_species !species
+        do j=1,nulibtable_number_groups !neutrino E
+           do k=1,nulibtable_number_groups !otherne E
+              index = index + 1
+              nulibtable_bremsstrahlung_gang_Phi0(:,:,:,index) = log10(max(1.0d-200,ABS(nulibtable_temp3(:,:,:,j,i,k,1))))
+              index = index + 1
+              nulibtable_bremsstrahlung_gang_Phi0(:,:,:,index) = log10(max(1.0d-200,ABS(nulibtable_temp3(:,:,:,j,i,k,2))))
+           enddo
+        enddo
+     enddo
+!~     write(*,*) MAXVAL(nulibtable_bremsstrahlung_Phi0)
+
+
+     deallocate(nulibtable_temp3)
+
+  endif
+
+
+
+
   !must close h5 files, check for error
   if (cerror.ne.0) then
      write (*,*) "We have errors on reading HDF5 file", cerror
@@ -423,4 +487,39 @@ subroutine nulibtable_reader(filename,include_Ielectron,include_epannihil_kernel
   call h5fclose_f(file_id,error)
   call h5close_f(error)
 
+!~   if ( include_gang_kernels) then 
+!~   !open HDF5 file, given filename                                                                                             
+!~ 	  call h5open_f(error)
+!~ 	  if (error.ne.0) then
+!~ 	     stop "Error reading in gang file"
+!~ 	  endif
+	  
+!~ 	  call h5fopen_f(trim(adjustl("Data.h5")), &
+!~ 	       H5F_ACC_RDONLY_F,file_id,error)
+!~ 	  if (error.ne.0) then
+!~ 	     write(*,*) trim(adjustl("Data.h5"))
+!~ 	     stop "Error reading in gang table"
+!~ 	  endif
+	  
+!~ 	rank = 4
+!~ 	dims4(1) = 25
+!~ 	dims4(2) = 37
+!~ 	dims4(3) = 26
+!~ 	dims4(4) = 40
+!~ 	allocate(gang_table(dims4(1),dims4(2),dims4(3),dims4(4)))
+!~ 	call h5dopen_f(file_id, "kernel", dset_id, error)
+!~ 	call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,gang_table, dims4, error)
+!~     call h5dclose_f(dset_id, error)
+!~     cerror = cerror + error   
+
+!~ 	if (cerror.ne.0) then
+!~ 	     write (*,*) "We have errors on reading Gang file", cerror
+!~ 	     stop
+!~ 	endif  
+	
+!~ 	call h5fclose_f(file_id,error)
+!~ 	call h5close_f(error)
+
+!~   endif
+  
 end subroutine nulibtable_reader
