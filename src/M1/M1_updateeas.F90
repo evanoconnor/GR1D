@@ -70,7 +70,8 @@ subroutine M1_updateeas
 
            !re calculate emmisivity from black body.
            keytemp = 1 !keep temperature
-           keyerr = 0       
+           keyerr = 0
+#if HAVE_NUC_EOS
            call nuc_eos_full(xrho,xtemp,xye,eosdummy(1),eosdummy(2),eosdummy(3), &
                 eosdummy(4),eosdummy(5),eosdummy(6),eosdummy(7),eosdummy(8), &
                 eosdummy(9),eosdummy(10),eosdummy(11),eosdummy(12), &
@@ -83,7 +84,9 @@ subroutine M1_updateeas
               write(6,"(i5,1P3E18.9)") k,xrho,xtemp,xye
               stop "This is bad!"
            endif
-
+#else
+           stop "Need nuclear EOS for M1 transport"
+#endif
            xeta = (elechem(k)-eosdummy(17))/xtemp
            do j=1,number_groups
               energy_x = nulibtable_energies(j)/(nulib_energy_gf*xtemp)
@@ -110,6 +113,7 @@ subroutine M1_updateeas
         if (include_Ielectron_exp.or.include_Ielectron_imp.or.include_epannihil_kernels) then
            keytemp = 1 !keep temperature, not resetting any hydro variables
            keyerr = 0       
+#if HAVE_NUC_EOS
            call nuc_eos_full(xrho,xtemp,xye,eosdummy(1),eosdummy(2),eosdummy(3), &
                 eosdummy(4),eosdummy(5),eosdummy(6),eosdummy(7),eosdummy(8), &
                 eosdummy(9),eosdummy(10),eosdummy(11),eosdummy(12), &
@@ -122,7 +126,9 @@ subroutine M1_updateeas
               write(6,"(i5,1P3E18.9)") k,xrho,xtemp,xye
               stop "This is bad!"
            endif
-
+#else
+           stop "Need nuclear EOS for M1 transport"
+#endif
            xtemp = temp(k)
            xeta = elechem(k)/temp(k)
         endif
