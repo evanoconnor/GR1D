@@ -19,7 +19,7 @@
 
 \title{\code{GR1D}:\\ An Open-Source Code for Stellar Collapse\\
  and Black Hole Formation}
-\author{Evan\ O'Connor \& Christian\ D.\ Ott\\e-mail: {\tt GR1D@stellarcollapse.org}}
+\author{Evan\ O'Connor}
 \begin{document}
 
 %\maketitle
@@ -31,9 +31,9 @@
  \large An Open-Source Neutrino Radiation Hydrodynamics Code for
  Stellar Collapse and Black Hole Formation \normalsize
 
-Evan\ O'Connor, North Carolina State University \& Christian\ D.\ Ott, California Institute of Technology
+Evan\ O'Connor, Stockholm University
 
-e-mail: {\tt GR1D@stellarcollapse.org}
+website: \url{http://GR1Dcode.org}
 
 \end{center}
 
@@ -46,15 +46,15 @@ running it. If you decide to use \code{GR1D} in published work, it is
 YOUR responsibility to test the code and ensure its physical
 correctness and consistency. 
 
-{\bf If you find bugs or inconsistencies, please let us know via
-  e-mail to \\ {\tt GR1D@stellarcollapse.org}\,!} This is particularly
-probable if you are using \code{GR1D} in a way we have not thought of
-yet.  We are also open for collaboration on extending \code{GR1D} to
-include more physics. However, please avoid contacting us with
-questions like: ``How do I get \code{GR1D} to read in my stellar
-profile?'' Just remember that \code{GR1D} is plain Fortran 90 and that
-basic knowledge of that language and the ability to use a text editor
-will solve this problem for you.
+{\bf If you find bugs or inconsistencies, please let us know via an
+  issue on GitHub.} This is particularly probable if you are using
+\code{GR1D} in a way we have not thought of yet.  We are also open for
+collaboration on extending \code{GR1D} to include more
+physics. However, please avoid contacting us with questions like:
+``How do I get \code{GR1D} to read in my stellar profile?'' Just
+remember that \code{GR1D} is plain Fortran 90 and that basic knowledge
+of that language and the ability to use a text editor will solve this
+problem for you.
 
 While \code{GR1D} is open source, its copyright is held by Evan
 O'Connor and Christian D.\ Ott. In the absence of suitable open
@@ -95,7 +95,6 @@ provided. \code{GR1D} is written in Fortran 90.  The compiler options
 must be set in the {\it make.inc} file. The authors suggest using the
 \code{MESA SDK} available at
 \url{http://www.astro.wisc.edu/~townsend/static.php?ref=mesasdk}.
-
 To activate support for finite-temperature EOS and neutrino leakage,
 the following preprocessor definitions must be set in \emph{make.inc}:\\
 {\tt HAVE\_NUC\_EOS=1}\\
