@@ -212,7 +212,7 @@ subroutine input_parser
            write(*,*) "Initial M1 inelastic electron scattering method not the same as specified in main parameters"
            stop
         endif
-        if (M1_phase1_ies_way.eq.2.and.(include_Ielectron_exp.or..not.include_Ielectron_exp)) then
+        if (M1_phase1_ies_way.eq.2.and.(include_Ielectron_exp.or..not.include_Ielectron_imp)) then
            write(*,*) "Initial M1 inelastic electron scattering method not the same as specified in main parameters"
            stop
         endif
