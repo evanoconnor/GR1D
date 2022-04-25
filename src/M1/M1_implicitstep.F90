@@ -1069,7 +1069,7 @@ subroutine M1_implicitstep(dts,implicit_factor)
            stop "You need to have matrix inversion software" 
 #endif
 
-           if (sum(RF).ne.sum(RF)) then
+           if (isnan(sum(RF))) then
               write(*,*) k,i,nt
               write(*,*) NL_jacobian
               write(*,*) 
