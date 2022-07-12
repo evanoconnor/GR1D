@@ -194,24 +194,26 @@ subroutine postStep_analysis
 
   !fill mass fractions
 #if HAVE_NUC_EOS
-  keytemp = 1 !keep eps constant
-  keyerr = 0
-  do i=ghosts1+1,n1-ghosts1
-     lrho = rho(i)/rho_gf
-     ltemp = temp(i)
-     lye = ye(i)
-     call nuc_eos_full(lrho,ltemp,lye,eosdummy(1),eosdummy(2),eosdummy(3), &
-          eosdummy(4),eosdummy(5),eosdummy(6),eosdummy(7),massfrac_a(i),massfrac_h(i), &
-          massfrac_n(i),massfrac_p(i),massfrac_abar(i),massfrac_zbar(i),eosdummy(8), &
-          eosdummy(9),eosdummy(10),eosdummy(11),keytemp,keyerr,eos_rf_prec)
-     if(keyerr.ne.0) then
-        write(6,*) "############################################"
-        write(6,*) "EOS PROBLEM in poststep analysis:"
-        write(6,*) "timestep number: ",nt
-        write(6,"(i4,1P10E15.6)") i,x1(i)/length_gf,lrho,ltemp,lye
-        stop "Shouldn't fair here...."
-     endif
-  enddo
+  if (eoskey.eq.3) then !if using nuclear EOS
+     keytemp = 1 !keep eps constant
+     keyerr = 0
+     do i=ghosts1+1,n1-ghosts1
+        lrho = rho(i)/rho_gf
+        ltemp = temp(i)
+        lye = ye(i)
+        call nuc_eos_full(lrho,ltemp,lye,eosdummy(1),eosdummy(2),eosdummy(3), &
+             eosdummy(4),eosdummy(5),eosdummy(6),eosdummy(7),massfrac_a(i),massfrac_h(i), &
+             massfrac_n(i),massfrac_p(i),massfrac_abar(i),massfrac_zbar(i),eosdummy(8), &
+             eosdummy(9),eosdummy(10),eosdummy(11),keytemp,keyerr,eos_rf_prec)
+        if(keyerr.ne.0) then
+           write(6,*) "############################################"
+           write(6,*) "EOS PROBLEM in poststep analysis:"
+           write(6,*) "timestep number: ",nt
+           write(6,"(i4,1P10E15.6)") i,x1(i)/length_gf,lrho,ltemp,lye
+           stop "Shouldn't fair here...."
+        endif
+     enddo
+  endif
 #endif
 
 
