@@ -151,6 +151,8 @@ module GR1D_module
   !M1 scheme stuff
   logical :: do_M1 = .false.
   integer :: M1_prev_phase = 1
+  logical :: do_M1_extra_heating = .false.
+  real*8 :: M1_heat_fac = 1.0d0
 
   integer :: v_order
   real*8 :: M1_maxradii
