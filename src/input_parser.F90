@@ -144,6 +144,8 @@ subroutine input_parser
   if(do_M1) then
      call get_integer_parameter('v_order',v_order)
      if (fake_neutrinos) stop "M1 neutrino's are not fake, how dare you (fake_neutrino needs to be 0 for M1)" 
+     call get_logical_parameter("do_M1_extra_heating",do_M1_extra_heating)
+     if (do_M1_extra_heating) call get_double_parameter("M1_heat_fac",M1_heat_fac)
      call get_double_parameter('evolution_radii',M1_maxradii)
      call get_double_parameter('extraction_radii',M1_extractradii)
      call get_integer_parameter('number_species',number_species)

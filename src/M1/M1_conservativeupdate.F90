@@ -24,16 +24,26 @@ subroutine M1_conservativeupdate(dts)
   total_net_heating = 0.0d0
   total_net_deintdt = 0.0d0
   total_mass_gain = 0.0d0
-  igain(1) = ghosts1+1
+  igain(1) = -1
   gain_radius = 0.0d0
   maxye = 0.0d0
   maxyeloc = 0
+
   do k=ghosts1+1,M1_imaxradii
 
      if (GR) then
         oneX = X(k)
      else
         oneX = 1.0d0
+     endif
+
+     passfluxtest = sum(abs(q_M1(k,1,:,2))/X(k))/sum(q_M1(k,1,:,1)).gt.0.5d0
+     passfluxtest = passfluxtest.and.(sum(abs(q_M1(k,2,:,2))/X(k))/sum(q_M1(k,2,:,1)).gt.0.5d0)
+
+     passfluxtest = rho(k)/rho_gf.lt.3.0d10
+
+     if ((M1_matter_source(k,3).gt.0.0d0).and.(entropy(k).gt.6.0d0).and.passfluxtest) then
+        M1_matter_source(k,3) = M1_matter_source(k,3)*M1_heat_fac
      endif
 
      !convert this to number from energy, note since we evolve E, not
@@ -45,16 +55,14 @@ subroutine M1_conservativeupdate(dts)
      depsdt(k) = M1_matter_source(k,3)/rho(k)*4.0d0*pi/eps_gf*time_gf
      dyedt(k) = M1_matter_source(k,4)*4.0d0*pi*X(k)/q(k,1)*(amu_cgs*mass_gf)*time_gf
 
-     passfluxtest = sum(abs(q_M1(k,1,:,2))/X(k))/sum(q_M1(k,1,:,1)).gt.0.5d0
-     passfluxtest = passfluxtest.and.(sum(abs(q_M1(k,2,:,2))/X(k))/sum(q_M1(k,2,:,1)).gt.0.5d0)
-
-     passfluxtest = rho(k)/rho_gf.lt.3.0d10
-
      if ((dtau.gt.0.0d0).and.(entropy(k).gt.6.0d0).and.passfluxtest) then
         total_net_heating = total_net_heating + &
              dtau*X(k)*volume(k)/(energy_gf*dts/time_gf)
         total_mass_gain = total_mass_gain + &
              volume(k)*rho(k)
+        if (igain(1) .lt. 0.0) then
+           igain(1) = k
+        endif
 
      endif
 
