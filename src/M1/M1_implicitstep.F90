@@ -1168,10 +1168,9 @@ subroutine M1_implicitstep(dts,implicit_factor)
                        
                        !second time in here, make flux implicit
                        if (trouble_brewing) then
-                          sourceG(problem_zone,3) = q_M1_old(k,i,problem_zone,1) + &
-                               D_M1(k,i,j,1)
+                          sourceG(problem_zone,3) = q_M1_old(k,i,problem_zone,1)
                           sourceG(problem_zone,1) = sourceG(problem_zone,1) - &
-                               B_M1(k,i,problem_zone,1)/q_M1_old(k,i,problem_zone,1)
+                               ( D_M1(k,i,j,1) + B_M1(k,i,j,1) )/q_M1_old(k,i,problem_zone,1)
                           changedtwice = .true.
                        endif
 

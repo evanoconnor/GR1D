@@ -261,11 +261,18 @@ subroutine input_parser
         omega_A = omega_A*length_gf
         omega_c = omega_c/time_gf
      endif
+     call get_logical_parameter('do_turbulence',do_turbulence)
+     if (do_turbulence) then
+  	     if (geometry.ne.2) stop "Turbulence in 1D?"
+        call get_double_parameter('alpha_turb',alpha_turb)
+        call get_double_parameter('tpb_for_turbulence',tpb_for_turbulence)
+     endif
   endif
      
   if(do_restart) then
      call get_string_parameter('restart_file_name',restart_file_name)
      call get_logical_parameter('force_restart_dump',force_restart_output)
+     call get_logical_parameter('read_v_turb',read_v_turb)
   endif
 
 contains
@@ -280,7 +287,7 @@ contains
    integer isokay
    character*(200) temp_string
 
-   open(unit=27,file='parameters',status='unknown')
+   open(unit=27,file=input_file,status='unknown')
 
 10 continue
    read(27,'(a)',end=19) line_string

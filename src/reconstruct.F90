@@ -90,6 +90,14 @@ subroutine reconstruct_with_pc
         endif
      endif
 
+     ! not sure if I have to do stuff worrying about GR active,
+     ! I don't think so since we are dealing with a mass scalar
+     
+     if (activate_turbulence) then
+        v_turbm(i) = v_turb(i)
+        v_turbp(i) = v_turb(i)
+     endif
+
      if (GR) then
         if (do_rotation) then
            discrim = 1.0d0-vp(i)**2-twothirds*vphip(i)**2
@@ -146,6 +154,13 @@ subroutine reconstruct_with_tvd
      else
         call tvd_reconstruction(n1,ghosts1,vphi1,vphi1p,vphi1m,tvd_limiter)
      endif
+  endif
+
+  ! not sure if I have to do stuff worrying about GR active,
+  ! I don't think so since we are dealing with a mass scalar
+  
+  if (activate_turbulence) then
+     call tvd_reconstruction(n1,ghosts1,v_turb,v_turbp,v_turbm,tvd_limiter)
   endif
 
   if (GR) then
@@ -230,6 +245,12 @@ subroutine reconstruct_with_ppm
      endif
   endif
 
+  ! not sure if I have to do stuff worrying about GR active,
+  ! I don't think so since we are dealing with a mass scalar
+  if (activate_turbulence) then
+     call ppm_interpolate(v_turb,v_turbp,v_turbm)
+  endif
+
   call ppm_flatten
 
   call ppm_monotonize(rho,rhop,rhom)
@@ -257,6 +278,10 @@ subroutine reconstruct_with_ppm
            vphi1m(i) = ppmomegam(i)*x1i(i)
         enddo
      endif
+  endif
+
+  if (activate_turbulence) then
+     call ppm_monotonize(v_turb,v_turbp,v_turbm)
   endif
 
   cv = 0.0d0

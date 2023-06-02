@@ -3,6 +3,7 @@ subroutine Step(dts)
 
   use GR1D_module
   use ye_of_rho
+  use nulibtable
 #if HAVE_LEAK_ROS
   use leakage_rosswog
 #endif
@@ -22,6 +23,36 @@ subroutine Step(dts)
 
   !M1 stuff
   real*8 implicit_factor
+
+  ! Is it time to turn on turbulence?
+  if (do_turbulence) then
+      if (tpb_for_turbulence .lt. 0.0d0) then
+         activate_turbulence = .true.
+      else if (bounce) then
+		 if (time .gt. t_bounce + tpb_for_turbulence) then
+			activate_turbulence = .true.
+		 else 
+		    activate_turbulence = .false.  
+		 endif
+	  else 
+         activate_turbulence = .false.
+      endif
+  endif
+ 
+  !If the shock reaches the outer boundary you can safely assume that the SN exploded
+  if ( (shock_radius .ge. x1(n1-ghosts1-1)) .or. &
+       (shock_radius/length_gf .ge. 15000.0d5) .and. .not. explosion_reached) then
+     write(*,*) "Explosion! :-)"
+     open(unit=666,file=trim(adjustl(outdir))//"/explosion",status="unknown")
+     write(666,*) 1
+     close(666)
+     explosion_reached = .true.
+  endif
+
+  !calculate v_turb for this time step
+  if (activate_turbulence) then
+     call Brunt_Vaisala(dts)
+  endif
 
   !set up conserved variables
   call prim2con
@@ -71,6 +102,12 @@ subroutine Step(dts)
      call reconstruct 
      call boundaries(0,0)
 
+     if (activate_turbulence) then
+        turb_source(:,:) = 0.0d0
+        call turb_diff_terms
+        call turbulence_sources
+     endif
+     
      if(flux_type .eq. "HLLE") then
         call flux_differences_hlle
      else
@@ -84,7 +121,7 @@ subroutine Step(dts)
      if(hydro_formulation.eq."conservative_p_source".and.(geometry.eq.2)) then
         call press_sources 
      endif
-     
+  
      if (GR.and.gravity_active) then
         if (do_nupress) then
            call nu_press_sources
@@ -126,6 +163,19 @@ subroutine Step(dts)
                    + presssource(i,5) )
            enddo
         endif
+
+        if(activate_turbulence) then
+           do i=ghosts1,n1-1
+              ! add source of turbulent energy to eps
+              q_hat(i,3) = q_hat(i,3) + dts * turb_source(i,3)
+                  q_hat(i,6) = q_hat_old(i,6) + dts * ( - flux_diff(i,6) &
+                        + turb_source(i,6))
+				  ! Sometimes v_turb**2 can become negative, which is not physical	
+                  if (q_hat(i,6) .lt. 0.d0) then
+                      q_hat(i,6) = 0.0d0
+                  endif
+           enddo
+        endif
         
      elseif (rkindex .eq. 2 ) then
         do i=ghosts1,n1-1
@@ -159,7 +209,20 @@ subroutine Step(dts)
                    + presssource(i,5) ) ) / alpha_rk
            enddo
         endif
-        
+
+        if(activate_turbulence) then
+           do i=ghosts1,n1-1
+              q_hat(i,3) = q_hat(i,3) + dts            &
+                   * turb_source(i,3) / alpha_rk              
+                  q_hat(i,6) = (beta_rk * q_hat_old(i,6) + q_hat(i,6) &
+                       + dts * (- flux_diff(i,6) + turb_source(i,6)))/alpha_rk
+				  ! Sometimes v_turb**2 can become negative, which is not physical	
+                  if (q_hat(i,6) .lt. 0.d0) then
+                      q_hat(i,6) = 0.0d0
+                  endif
+           enddo
+        endif 
+       
      elseif (rkindex .eq. 3) then
         do i=ghosts1,n1-1
            q_hat(i,1) = ( q_hat_old(i,1) + 2.0d0*q_hat(i,1)  &
@@ -189,6 +252,20 @@ subroutine Step(dts)
                    + presssource(i,5) ) ) / 3.0d0
            enddo
         endif
+        
+        if(activate_turbulence) then
+           do i=ghosts1,n1-1
+              q_hat(i,3) = q_hat(i,3) + 2.0d0 * dts  &
+                   * turb_source(i,3) / 3.0d0
+                  q_hat(i,6) = (q_hat_old(i,6) + 2.0d0*q_hat(i,6) &
+                       + 2.0d0*dts*( - flux_diff(i,6) &
+                       + turb_source(i,6)))/3.0d0
+				  ! Sometimes v_turb**2 can become negative, which is not physical	
+                  if (q_hat(i,6) .lt. 0.d0) then
+                      q_hat(i,6) = 0.0d0
+                  endif
+           enddo
+        endif 
      else 
         stop 'Only iorder_hydro = 1, 2, and 3 implemented!'
      endif

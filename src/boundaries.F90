@@ -62,7 +62,12 @@ subroutine boundaries(innerflag,outerflag)
            vphi1p(i) = -vphi1m(gi)
            vphi1m(i) = -vphi1p(gi)
         endif
-
+        if(activate_turbulence) then
+           ! follow what's done for ye since we deal with a mass scalar (i.e. rho*v_turb^2)
+           v_turb(i) = v_turb(gi)
+           v_turbm(i) = v_turbm(gi)
+           v_turbp(i) = v_turbp(gi)
+        endif
      enddo
   else
      gi=ghosts1+1
@@ -162,7 +167,14 @@ subroutine boundaries(innerflag,outerflag)
         vphi1m(i) = vphi1(gi)
         vphi1p(i) = vphi1(gi)
      endif
-
+     if(activate_turbulence) then
+        ! follow what's done for ye since we deal with a mass scalar (i.e. v_turb^2)    
+        v_turbp(gi) = v_turb(gi)
+        v_turb(i) = v_turb(gi)
+        v_turbm(i) = v_turb(gi)
+        v_turbp(i) = v_turb(gi)
+     endif
+     
   enddo
   
 end subroutine boundaries

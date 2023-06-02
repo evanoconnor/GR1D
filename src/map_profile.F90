@@ -2,6 +2,7 @@
 subroutine map_profile(lprofile_name)
 
   use GR1D_module
+  use grad_module, only: QuadraticInterpolation1D
   implicit none
 
   character*(*) lprofile_name
@@ -17,7 +18,7 @@ subroutine map_profile(lprofile_name)
        ppress(:),peps(:),pvel(:),&
        pye(:),pomega(:)
 
-  real*8,allocatable,save :: pradius_new(:)
+  real*8,allocatable,save :: pradius_new(:), pvel_new(:)
   
   real*8 :: kboltz_cgs = 1.380662d-16
   
@@ -63,11 +64,17 @@ subroutine map_profile(lprofile_name)
 
   if (WHW02) then
      allocate(pradius_new(profile_zones))
+     allocate(pvel_new(profile_zones))
      pradius_new(1) = pradius(1)/2.0d0
      do i=2,profile_zones
         pradius_new(i) = (pradius(i)+pradius(i-1))/2.0d0
      enddo
+     do i=1,profile_zones
+       call QuadraticInterpolation1D(pradius, pvel, profile_zones,&
+           pradius_new(i), pvel_new(i))
+     enddo
      pradius(:) = pradius_new(:)
+     pvel(:) = pvel_new(:)
      !end of suggested code
   endif
 

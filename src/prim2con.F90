@@ -29,13 +29,17 @@ subroutine prim2con_1
         if(do_rotation) then
            q(i,5) = rho(i)*h*W(i)**2*vphi(i)*x1(i)
         endif
+        
+        if(activate_turbulence) then
+           q(i,6) = X(i)*W(i)*rho(i)*v_turb(i)**2
+        endif
      enddo
   else 
      !Newtonian
      do i=1,n1
         q(i,1) = rho(i)
         q(i,2) = rho(i)*v1(i)
-        q(i,3) = rho(i)*eps(i) + 0.5d0*rho(i)*v1(i)**2 
+        q(i,3) = rho(i)*eps(i) + 0.5d0*rho(i)*v1(i)**2
         if(do_rotation) then
            q(i,3) = q(i,3) + 0.5d0*rho(i)*twothirds*vphi1(i)**2
         endif
@@ -47,6 +51,12 @@ subroutine prim2con_1
         enddo
      endif
 
+     if(activate_turbulence) then
+       ! you might have to add something to turbulence in case of rotation ???
+       do i=1,n1
+           q(i,6) = rho(i)*v_turb(i)**2
+        enddo
+     endif
   endif
   
 end subroutine prim2con_1
@@ -80,6 +90,10 @@ subroutine prim2con_if
            qm(i,5) = rhom(i) * hm * Wm(i)**2 * vphim(i) * x1i(i)
         endif
 
+        if(activate_turbulence) then
+           qp(i,6) = Xp(i) * Wp(i) * rhop(i) * v_turbp(i)**2
+           qm(i,6) = Xm(i) * Wm(i) * rhom(i) * v_turbm(i)**2
+        endif
      enddo
   else 
      !Newtonian
@@ -101,6 +115,10 @@ subroutine prim2con_if
            qm(i,3) = qm(i,3) + 0.5d0*rhom(i)*twothirds*vphi1m(i)**2 
         endif
 
+        if(activate_turbulence) then
+           qp(i,6) = rhop(i) * v_turbp(i)**2
+           qm(i,6) = rhom(i) * v_turbm(i)**2 
+        endif
      enddo
   endif
   

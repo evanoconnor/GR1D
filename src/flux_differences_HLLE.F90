@@ -100,7 +100,17 @@ subroutine flux_differences_hlle
            fluxl(i,5) = qp(i,5)*vp(i)
            fluxr(i,5) = qm(i+1,5)*vm(i+1)
         endif
-        
+      
+        if(activate_turbulence) then
+           fluxl(i,2) = fluxl(i,2) + qp(i,6)
+           fluxl(i,3) = fluxl(i,3) + qp(i,6)*vp(i) 
+           
+           fluxr(i,2) = fluxr(i,2) + qm(i+1,6)
+           fluxr(i,3) = fluxr(i,3) + qm(i+1,6)*vm(i+1) 
+           
+		   fluxl(i,6) = qp(i,6)*vp(i)
+		   fluxr(i,6) = qm(i+1,6)*vm(i+1)
+        endif  
      else
         fluxl(i,1) = qp(i,1)*v1p(i)
         fluxl(i,2) = qp(i,2)*v1p(i) + pressp(i)
@@ -117,6 +127,16 @@ subroutine flux_differences_hlle
            fluxr(i,5) = qm(i+1,5)*v1m(i+1)
         endif
         
+        if(activate_turbulence) then
+           fluxl(i,2) = fluxl(i,2) + qp(i,6)
+           fluxl(i,3) = fluxl(i,3) + qp(i,6)*v1p(i) 
+           
+           fluxr(i,2) = fluxr(i,2) + qm(i+1,6)
+           fluxr(i,3) = fluxr(i,3) + qm(i+1,6)*v1m(i+1) 
+           
+		   fluxl(i,6) = qp(i,6)*v1p(i) 
+		   fluxr(i,6) = qm(i+1,6)*v1m(i+1) 
+        endif     
      endif
   enddo
 
@@ -134,6 +154,11 @@ subroutine flux_differences_hlle
              * ( qm(i+1,m) - qp(i,m) ) ) &
              / ( dspeed(i) )
      enddo
+     if(activate_turbulence) then
+        flux(i,3) = flux(i,3) - diff_term_eps(i)
+        flux(i,4) = flux(i,4) - diff_term_ye(i)
+        flux(i,6) = flux(i,6) - diff_term_K(i)
+     endif
   enddo
 
   ! update by flux differencing
@@ -199,6 +224,6 @@ subroutine flux_differences_hlle
   
   call cpu_time(t2)
 
-  t_fdhlle = t_fdhlle + (t2-t1)
+!  t_fdhlle = t_fdhlle + (t2-t1)
   
 end subroutine flux_differences_hlle

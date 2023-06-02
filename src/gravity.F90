@@ -36,6 +36,7 @@ subroutine con2GR
   real*8 nuE(n1)
   integer iminb,imaxb
   real*8 discrim
+  real*8 turbE(n1)
 
   iminb = ghosts1+1
   imaxb = n1-1
@@ -50,10 +51,16 @@ subroutine con2GR
      nuE(:) = (W(:)**2-1.0d0)*press_nu(:) + W(:)**2*energy_nu(:)
   endif
 
+  if (activate_turbulence) then
+     turbE(:) = q(:,6)
+  else
+     turbE(:) = 0.0d0
+  endif
+  
   !find new GR quantities
-  mgrav1(iminb) = (q(iminb,3)+q(iminb,1)+nuE(iminb))*volume(iminb)
+  mgrav1(iminb) = (q(iminb,3)+q(iminb,1)+nuE(iminb)+turbE(iminb))*volume(iminb)
   mgrav(iminb) = mgrav1(iminb) - 4.0d0/3.0d0*pi*(q(iminb,3) &
-       +q(iminb,1)+nuE(iminb)) * ( x1i(iminb+1)**3 - x1(iminb)**3 ) 
+       +q(iminb,1)+nuE(iminb)+turbE(iminb)) * ( x1i(iminb+1)**3 - x1(iminb)**3 ) 
   mgravi(iminb) = 0.0d0
   discrim = 1.0d0 - 2.0d0*mgrav(iminb)/x1(iminb)
   if (discrim.lt.0.0d0) then
@@ -61,12 +68,12 @@ subroutine con2GR
   endif
   X(iminb) = 1.0d0/sqrt(discrim)
   do i=iminb+1,imaxb
-     mgrav1(i) = (q(i,3)+q(i,1)+nuE(i))*volume(i)
+     mgrav1(i) = (q(i,3)+q(i,1)+nuE(i)+turbE(i))*volume(i)
      mgrav(i) = mgrav(i-1) + mgrav1(i) - 4.0d0/3.0d0*pi*(q(i,3)+q(i,1)+ &
-          nuE(i)) *( x1i(i+1)**3 - x1(i)**3 ) + &
-          4.0d0/3.0d0*pi*(q(i-1,3)+q(i-1,1)+nuE(i-1)) &
+          nuE(i)+turbE(i)) *( x1i(i+1)**3 - x1(i)**3 ) + &
+          4.0d0/3.0d0*pi*(q(i-1,3)+q(i-1,1)+nuE(i-1)+turbE(i-1)) &
           * ( x1i(i)**3 - x1(i-1)**3 )    
-     mgravi(i) = mgravi(i-1) + (q(i-1,3)+q(i-1,1)+nuE(i-1))*volume(i-1)
+     mgravi(i) = mgravi(i-1) + (q(i-1,3)+q(i-1,1)+nuE(i-1)+turbE(i-1))*volume(i-1)
      discrim = 1.0d0 - 2.0d0*mgrav(i)/x1(i)
      if (discrim.lt.0.0d0) then
         stop "We have a black hole"

@@ -1,6 +1,7 @@
 include ../make.inc
 
 SOURCES=GR1D_module.F90 \
+	grad_module.F90 \
 	timers.F90 \
 	GR1D.F90 \
 	atmosphere.F90 \
@@ -36,6 +37,7 @@ SOURCES=GR1D_module.F90 \
 	analysis.F90 \
 	neutrino_pressure.F90 \
 	start.F90 \
+	turbulence.F90 \
 	M1/M1_init.F90 \
 	M1/M1_reconstruct.F90 \
 	M1/M1_closure.F90 \
