@@ -117,3 +117,5 @@ atmo_fac		=	0.1d0
 ####### Rotation #######
 do_rotation		=	0	# 1 for 1D rotation
 
+###### Turbulence #######
+do_turbulence           =       0       # 1 for turbulence of Boccioli et al. (2021)
