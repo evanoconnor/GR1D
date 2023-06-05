@@ -6,7 +6,7 @@ subroutine input_parser
   implicit none
 
   integer :: tempint
-  
+        
   call get_string_parameter('jobname',jobname)
   call get_string_parameter('outdir',outdir)
   call get_logical_parameter('GR',GR)
@@ -272,7 +272,7 @@ subroutine input_parser
   if(do_restart) then
      call get_string_parameter('restart_file_name',restart_file_name)
      call get_logical_parameter('force_restart_dump',force_restart_output)
-     call get_logical_parameter('read_v_turb',read_v_turb)
+     if(do_turbulence) call get_logical_parameter('read_v_turb',read_v_turb)
   endif
 
 contains
@@ -351,7 +351,8 @@ contains
    write(6,*) "Fatal problem in input parser:"
    write(6,*) "Parameter ",parname
    write(6,*) "could not be read!"
-   write(6,*) 
+   write(6,*)
+
    call flush(6)
    stop
 

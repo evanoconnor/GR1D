@@ -11,8 +11,15 @@ subroutine start
   character(len=128) cpstring
   character(len=128) rmstring
   logical :: outdirthere
+  integer :: num_args
 
-  call getarg(1,input_file)
+  num_args = command_argument_count()
+  if ( num_args .eq. 0 ) then
+    input_file = "parameters"
+  else
+    call getarg(1,input_file)
+  endif
+
   write(*,*) "Parsing input file..."
   
   !this time to get details of arrays sizes etc
