@@ -22,7 +22,7 @@ subroutine turb_diff_terms
       Lambda_mixp = alpha_turb * pressp(i) / (rhop(i) * dphidr(i))
       Lambda_mixp = min(Lambda_mixp,x1(i))
       
-      ! Calculate diffusion coefficients as given in Couch et al. 2019 eqs. 29-31
+      ! Calculate diffusion coefficients as given in Couch et al. 2020 eqs. 29-31
       D_turb_eps = alpha_turb_e * v_turbp(i) * Lambda_mixp
       D_turb_ye = alpha_turb_ye * v_turbp(i) * Lambda_mixp
       D_turb_K = alpha_turb_K * v_turbp(i) * Lambda_mixp
