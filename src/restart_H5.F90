@@ -1126,11 +1126,8 @@ subroutine restart_init_h5
      
      rank=2
      dims2(1) = n1
-     ! with turbulence n_cons is always 6
-     dims2(2) = 6
+     dims2(2) = 4
      
-     if (dims2(2).ne.n_cons) stop "add other conservative to neutrinos, and restart file"
-
      call h5dopen_f(file_id, "M1_matter_source", dset_id, error)
      call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, M1_matter_source, dims2, error)
      call h5dclose_f(dset_id,error) 
