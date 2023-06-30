@@ -26,19 +26,19 @@ subroutine Step(dts)
 
   ! Is it time to turn on turbulence?
   if (do_turbulence) then
-      if (tpb_for_turbulence .lt. 0.0d0) then
-         activate_turbulence = .true.
-      else if (bounce) then
-		 if (time .gt. t_bounce + tpb_for_turbulence) then
-			activate_turbulence = .true.
-		 else 
-		    activate_turbulence = .false.  
-		 endif
-	  else 
-         activate_turbulence = .false.
-      endif
+     if (tpb_for_turbulence .lt. 0.0d0) then
+        activate_turbulence = .true.
+     else if (bounce) then
+        if (time .gt. t_bounce + tpb_for_turbulence) then
+           activate_turbulence = .true.
+        else 
+           activate_turbulence = .false.  
+        endif
+     else 
+        activate_turbulence = .false.
+     endif
   endif
- 
+
   !If the shock reaches the outer boundary you can safely assume that the SN exploded
   if ( (shock_radius .ge. x1(n1-ghosts1-1)) .or. &
        (shock_radius/length_gf .ge. 15000.0d5) .and. .not. explosion_reached) then

@@ -108,8 +108,8 @@ subroutine flux_differences_hlle
            fluxr(i,2) = fluxr(i,2) + qm(i+1,6)
            fluxr(i,3) = fluxr(i,3) + qm(i+1,6)*vm(i+1) 
            
-		   fluxl(i,6) = qp(i,6)*vp(i)
-		   fluxr(i,6) = qm(i+1,6)*vm(i+1)
+	   fluxl(i,6) = qp(i,6)*vp(i)
+	   fluxr(i,6) = qm(i+1,6)*vm(i+1)
         endif  
      else
         fluxl(i,1) = qp(i,1)*v1p(i)
@@ -134,8 +134,8 @@ subroutine flux_differences_hlle
            fluxr(i,2) = fluxr(i,2) + qm(i+1,6)
            fluxr(i,3) = fluxr(i,3) + qm(i+1,6)*v1m(i+1) 
            
-		   fluxl(i,6) = qp(i,6)*v1p(i) 
-		   fluxr(i,6) = qm(i+1,6)*v1m(i+1) 
+	   fluxl(i,6) = qp(i,6)*v1p(i) 
+	   fluxr(i,6) = qm(i+1,6)*v1m(i+1) 
         endif     
      endif
   enddo
@@ -224,6 +224,6 @@ subroutine flux_differences_hlle
   
   call cpu_time(t2)
 
-!  t_fdhlle = t_fdhlle + (t2-t1)
+  t_fdhlle = t_fdhlle + (t2-t1)
   
 end subroutine flux_differences_hlle
