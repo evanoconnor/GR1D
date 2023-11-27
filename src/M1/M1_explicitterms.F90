@@ -78,6 +78,10 @@ subroutine M1_explicitterms(dts,implicit_factor)
   real*8 :: fluxtemp_1,fluxtemp_2
   real*8 :: limitingflux
 
+  ! turbulence
+  real*8 :: diffusive_turb_flux, grad_Enu, D_nu_turb
+  real*8 :: Lambda_mixp
+  
   !counters
   integer i,j,k,j_prime,jj,ii
 
@@ -100,7 +104,8 @@ subroutine M1_explicitterms(dts,implicit_factor)
   !$OMP M1en_space_minus,M1flux_space_minus,M1chi_space_minus,M1eddy_space_minus, &
   !$OMP k,oneWm,oneWp,kappa_inter,ipeclet_mean,a_asym,l_min_thin,l_max_thin, &
   !$OMP p,discrim,sqrtdiscrim,l_min_thick,l_max_thick,l_min,l_max,Jkplus1,Jk,diffusive_flux, &
-  !$OMP advected_energy,M1flux_interface,limitingflux,rm,rp,dx,M1flux_diff)
+  !$OMP advected_energy,M1flux_interface,limitingflux,rm,rp,dx,M1flux_diff, &
+  !$OMP diffusive_turb_flux, grad_Enu, D_nu_turb, Lambda_mixp)
   do j=1,number_groups
      do i=1,number_species_to_evolve
 
@@ -374,6 +379,33 @@ subroutine M1_explicitterms(dts,implicit_factor)
               stop "add v order"
            endif
 
+           if (activate_turbulence) then
+             if (k .lt. ghosts1+1) then
+                 diffusive_turb_flux = 0.0d0
+             else
+                 Lambda_mixp = alpha_turb * pressp(k) / (rhop(k) * dphidr(k))
+                 Lambda_mixp = min(Lambda_mixp,x1(k))
+
+                 grad_Enu = (M1en_space(k+1) - M1en_space(k))/(x1(k+1) - x1(k))
+                 D_nu_turb = alpha_turb_nu * v_turbp(k) * Lambda_mixp
+                 diffusive_turb_flux = - D_nu_turb * grad_Enu
+                 ! what happens with GR???? Probably nothing
+              endif
+
+              if (a_asym.eq.1.0d0) diffusive_turb_flux = 0.0d0
+
+           else
+              diffusive_turb_flux = 0.0d0
+           endif
+                     
+           ! If you use a low number of energy groups this might help the code to not
+           ! crush during bounce, since it reduces the free streaming of neutrinos due
+           ! to turbulence, which we know isn't very prevalent in the first 20 ms
+           !if (bounce .and. time .lt. t_bounce + 0.02d0) then
+           !   if ( ABS(diffusive_turb_flux) > ABS(diffusive_flux)*0.2d0 ) &
+           !     diffusive_turb_flux = sign(0.2d0,diffusive_turb_flux) * ABS(diffusive_flux)
+           !endif
+
            !flux at interface has two componants, asympotic part, free streaming part.
            M1flux_interface(k,1) = a_asym*( &
                 ((l_max(3)*M1flux_space_plus(k)-&
@@ -381,8 +413,9 @@ subroutine M1_explicitterms(dts,implicit_factor)
                 (M1en_space_minus(k+1)-M1en_space_plus(k)))/(l_max(3)-l_min(3)) &
                 ) + &
                 (1.0d0-a_asym)*( &
-                diffusive_flux + advected_energy &
-                )
+                diffusive_flux + advected_energy) + &
+                !(1.0d0-a_asym) * diffusive_turb_flux
+                (1.0d0-a_asym)**4 * diffusive_turb_flux
 
            !shift interface flux to geometric mean is the difference
            !is too large.  This helps the deleptonziation burst
@@ -454,7 +487,7 @@ subroutine M1_explicitterms(dts,implicit_factor)
      !$OMP velocity_coeffs,i,M1en_energy,M1en_energy_fluid,M1flux_energy,M1eddy_energy, &
      !$OMP M1pff_energy,M1qrrr_energy,M1qffr_energy,j,littlefactors,velocity,M1flux_energy_interface, &
      !$OMP logdistro,loginterface_distroj,interface_distroj,xi,temp_term,FL,FR,ep,M1flux_diff_energy, &
-     !$OMP em,de,enext)
+     !$OMP em,de,enext,h)
      do k=ghosts1+1,M1_imaxradii
         if (GR) then
            if (k.eq.ghosts1+1) then
@@ -506,6 +539,7 @@ subroutine M1_explicitterms(dts,implicit_factor)
            !this W^2 has the kinetic energy contriubiton to the mass,
            !nothing to do with the transport, so we'll leave it in
            !regardless of v_order.
+           h = (1.0d0+eps(k)+press(k)/rho(k))
            dmdr = 4.0d0*pi*x1(k)**2*(rho(k)*h*W(k)**2-press(k)) 
            dmdt = -4.0d0*pi*x1(k)**2*alp(k)*rho(k)*h*W(k)**2*v(k)/X(k)
            dXdr = X(k)**3*(dmdr/x1(k)-mgrav(k)/x1(k)**2)

@@ -77,6 +77,21 @@ subroutine output_all(modeflag)
         endif
      endif
      
+     if (do_turbulence) then
+        filename = trim(adjustl(outdir))//"/omega2_BV.xg"
+        call output_single(omega2_BV*time_gf**2,filename)
+        filename = trim(adjustl(outdir))//"/v_turb.xg"
+        call output_single(v_turb*time_gf/length_gf,filename)
+        filename = trim(adjustl(outdir))//"/dissipated_turb_eps.xg"
+        if (.not. small_output) call output_single(diss*time_gf/eps_gf,filename)
+        filename = trim(adjustl(outdir))//"/buoyancy_turb_eps.xg"
+        if (.not. small_output) call output_single(buoy*time_gf/eps_gf,filename)     
+        filename = trim(adjustl(outdir))//"/shear_turb_eps.xg"
+        if (.not. small_output) call output_single(shear*time_gf/eps_gf,filename)     
+        filename = trim(adjustl(outdir))//"/Lambda_MLT.xg"
+        if (.not. small_output) call output_single(lambda_mlt/length_gf,filename)     
+     endif
+	 
      filename = trim(adjustl(outdir))//"/rho.xg"
      call output_single(rho/rho_gf,filename)
      

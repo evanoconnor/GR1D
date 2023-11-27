@@ -11,10 +11,23 @@ subroutine start
   character(len=128) cpstring
   character(len=128) rmstring
   logical :: outdirthere
+  integer :: num_args
+
+  num_args = command_argument_count()
+  if ( num_args .eq. 0 ) then
+    input_file = "parameters"
+  else
+    call getarg(1,input_file)
+  endif
 
   write(*,*) "Parsing input file..."
+  
   !this time to get details of arrays sizes etc
   call input_parser
+
+  if (do_turbulence .and. do_rotation) then
+    stop 'Not yet tested with both rotation and turbulence! :/'
+  endif
 
   if(eoskey.eq.3) then
 #if HAVE_NUC_EOS
@@ -28,12 +41,8 @@ subroutine start
   !total zones
   n1 = radial_zones+ghosts1*2
 
-  if(do_rotation) then
-     n_cons = 5
-  else
-     n_cons = 4
-  endif
-
+  n_cons = 6
+  
   !allocate & initialize variables
   call allocate_vars
   call initialize_vars
@@ -61,7 +70,8 @@ subroutine start
   rmstring="rm -rf "//trim(adjustl(outdir))//"/*"
   call system(rmstring)
   ! copy parameter file
-  cpstring="cp parameters "//trim(adjustl(outdir))
+  cpstring="cp "//trim(adjustl(input_file))//" "//trim(adjustl(outdir)) &
+      //"/parameters"
   call system(cpstring)
 
   !setting up initial data

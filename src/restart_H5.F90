@@ -537,7 +537,17 @@ subroutine restart_output_h5
   call h5sclose_f(dspace_id, error)
   cerror = cerror + error
 #endif
-     
+   
+  if (do_turbulence) then
+     call h5screate_simple_f(rank, dims1, dspace_id, error)
+     call h5dcreate_f(file_id, "v_turb", H5T_NATIVE_DOUBLE, dspace_id,&
+          & dset_id, error)
+     call h5dwrite_f(dset_id, H5T_NATIVE_DOUBLE, v_turb, dims1, error)
+     call h5dclose_f(dset_id, error)
+     call h5sclose_f(dspace_id, error)
+     cerror = cerror + error
+  endif
+   
   if (do_nupress.or.do_M1) then
      call h5screate_simple_f(rank, dims1, dspace_id, error)
      call h5dcreate_f(file_id, "press_nu", H5T_NATIVE_DOUBLE,&
@@ -1082,6 +1092,13 @@ subroutine restart_init_h5
   cerror = cerror + error
 #endif
 
+  if (do_turbulence .and. read_v_turb) then
+     call h5dopen_f(file_id, "v_turb", dset_id, error)
+     call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, v_turb, dims1, error)
+     call h5dclose_f(dset_id,error)
+     cerror = cerror + error
+  endif
+
   if (do_nupress.or.do_M1) then
      call h5dopen_f(file_id, "press_nu", dset_id, error)
      call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, press_nu, dims1, error)
@@ -1111,8 +1128,6 @@ subroutine restart_init_h5
      dims2(1) = n1
      dims2(2) = 4
      
-     if (dims2(2).ne.n_cons) stop "add other conservative to neutrinos, and restart file"
-
      call h5dopen_f(file_id, "M1_matter_source", dset_id, error)
      call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, M1_matter_source, dims2, error)
      call h5dclose_f(dset_id,error) 
