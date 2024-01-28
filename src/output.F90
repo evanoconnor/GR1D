@@ -865,7 +865,7 @@ subroutine output_many_scalars(var,n0,n,filename)
   
   open(unit=666,file=filename,status="unknown",form='formatted',position="append")
   
-  write(666,"(1P64E18.9)") time,var(1:n)
+  write(666,"(1P256E18.9)") time,var(1:n)
   
   close(666)
   
